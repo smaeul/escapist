@@ -1,0 +1,50 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage2-libarchive
+pkgver=3.1.2
+pkgrel=1
+pkgdesc="library that can create and read several streaming archive formats"
+arch=('i686' 'x86_64')
+url="http://libarchive.org/"
+license=('BSD')
+#depends=('acl' 'attr' 'bzip2' 'expat' 'lzo2' 'openssl' 'xz' 'zlib')
+#options=('strip' 'debug' 'libtool')
+makedepends=('stage1-toolchain' 'stage2-bzip2' 'stage2-xz' 'stage2-zlib')
+source=("http://libarchive.org/downloads/libarchive-$pkgver.tar.gz"
+        '0001-mtree-fix-line-filename-length-calculation.patch'
+        https://github.com/libarchive/libarchive/commit/22531545514043e04633e1c015c7540b9de9dbe4.patch
+        'libarchive-3.1.2-acl.patch')
+md5sums=('efad5a503f66329bb9d2f4308b5de98a'
+         'fda89c145bbcd793a96b06b463ef6a72'
+         '6432f3360abd5645461a9c825c75b307'
+         'a5c995661c62429ceff2c23ea322393b')
+
+prepare() {
+  cd "$srcdir/libarchive-$pkgver"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=301
+  # upstream commit e65bf287f0133426b26611fe3e80b51267987106
+  patch -Np1 -i "$srcdir/0001-mtree-fix-line-filename-length-calculation.patch"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=329
+  patch -Np1 -i "$srcdir/libarchive-3.1.2-acl.patch"
+
+  # CVE-2013-0211
+  patch -Np1 -i "$srcdir/22531545514043e04633e1c015c7540b9de9dbe4.patch"
+}
+
+build() {
+  cd "$srcdir/libarchive-$pkgver"
+
+  ./configure \
+    --build=$CHOST --prefix=/stage1 \
+    --without-xml2
+  make
+}
+
+package() {
+  cd "$srcdir/libarchive-$pkgver"
+
+  make DESTDIR="$pkgdir" install
+  install -D -m644 COPYING "$pkgdir"/stage1/share/licenses/libarchive/COPYING
+}
