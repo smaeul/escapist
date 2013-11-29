@@ -1,0 +1,12 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage1-toolchain
+pkgver=1
+pkgrel=1
+pkgdesc="Temporary toolchain - Starch stage 1 complete"
+arch=('i686' 'x86_64')
+url="http://starchlinux.org"
+depends=('stage1-binutils' 'stage1-gcc' 'stage1-linux-headers' 'stage1-musl')
+conflicts=('binutils' 'binutils-multilib' 'gcc' 'gcc-multilib' 'stage0-binutils' 'stage0-gcc' 'stage0-gmp' 'stage0-mpc' 'stage0-mpfr' 'stage1-gmp' 'stage1-mpc' 'stage1-mpfr')
+provices=('binutils' 'gcc')
+license=('custom')
