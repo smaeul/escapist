@@ -1,0 +1,29 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage1-linux-headers
+pkgver=3.12.1
+pkgrel=1
+pkgdesc="Temporary Linux API headers - Starch stage 0"
+arch=('i686' 'x86_64')
+url="http://www.kernel.org/"
+license=('GPL2')
+source=(http://www.kernel.org/pub/linux/kernel/v3.x/linux-${pkgver}.tar.xz)
+        # NOTE: signatures are not automatically verified by makepkg
+        #http://www.kernel.org/pub/linux/kernel/v3.x/linux-${pkgver}.tar.sign
+md5sums=('f6f34baf553f278ff4637d8eaeff5dcd')
+
+build() {
+  cd ${srcdir}/linux-${pkgver}
+
+  make mrproper
+  make headers_check
+}
+
+package() {
+  cd ${srcdir}/linux-${pkgver}
+
+  make INSTALL_HDR_PATH=${pkgdir}/stage1 headers_install
+
+  # Clean up unnecessary files generated during install
+  find ${pkgdir} \( -name .install -o -name ..install.cmd \) -delete
+}
