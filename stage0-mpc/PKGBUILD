@@ -1,0 +1,35 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage0-mpc
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Temporary GNU MP Complex library - Starch stage 0"
+arch=('i686' 'x86_64')
+url="http://www.multiprecision.org/"
+license=('LGPL')
+depends=('stage0-gmp' 'stage0-mpfr')
+source=(http://www.multiprecision.org/mpc/download/mpc-${pkgver/_/-}.tar.gz{,.sig})
+md5sums=('b32a2e1a3daa392372fbd586d1ed3679'
+         'c064863fbbb5831ba4f75f1181333862')
+
+prepare() {
+  cd "${srcdir}/mpc-${pkgver}"
+
+  sed -i "s#\(-\?lin\)\(ux-gnu\* |\)\( -\?linux-android\*\)#\1\2 \1ux-musl* |\3#g" config.sub
+}
+
+build() {
+  cd "${srcdir}/mpc-${pkgver}"
+
+  ./configure \
+    --prefix=/stage0 \
+    --disable-shared \
+    --with-gmp=/stage0 --with-mpfr=/stage0
+  make
+}
+
+package() {
+  cd "${srcdir}/mpc-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
