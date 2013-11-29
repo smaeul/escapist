@@ -1,0 +1,41 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage0-mpfr
+_pkgver=3.1.2
+_patchlevel=p4
+pkgver=${_pkgver}.${_patchlevel}
+#pkgver=${_pkgver}
+pkgrel=1
+pkgdesc="Temporary GNU MP floating-point library - Starch stage 0"
+arch=('i686' 'x86_64')
+url="http://www.mpfr.org/"
+license=('LGPL')
+depends=('stage0-gmp')
+source=(http://www.mpfr.org/mpfr-current/mpfr-${_pkgver}.tar.xz{,.asc}
+        mpfr-${_pkgver}-${_patchlevel}.patch)
+md5sums=('e3d203d188b8fe60bb6578dd3152e05c'
+         'SKIP'
+         '88d56f526326914743428c64ab596382')
+
+prepare() {
+  cd "${srcdir}/mpfr-${_pkgver}"
+
+  patch -p1 -i $srcdir/mpfr-${_pkgver}-${_patchlevel}.patch
+  sed -i "s#\(-\?lin\)\(ux-gnu\* |\)\( -\?linux-android\*\)#\1\2 \1ux-musl* |\3#g" config.sub
+}
+
+build() {
+  cd "${srcdir}/mpfr-${_pkgver}"
+
+  ./configure \
+    --prefix=/stage0 \
+    --enable-thread-safe --disable-shared \
+    --with-gmp=/stage0
+  make
+}
+
+package() {
+  cd "${srcdir}/mpfr-${_pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
