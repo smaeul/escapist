@@ -1,0 +1,34 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage2-zlib
+pkgver=1.2.8
+pkgrel=1
+pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP'
+arch=('i686' 'x86_64')
+license=('custom')
+url="http://www.zlib.net/"
+makedepends=('stage1-toolchain')
+source=("http://zlib.net/current/zlib-${pkgver}.tar.gz")
+md5sums=('44d667c142d7cda120332623eab69f40')
+
+prepare() {
+	cd ${srcdir}/zlib-$pkgver
+	grep -A 24 '^  Copyright' zlib.h > LICENSE
+}
+
+build() {
+	cd ${srcdir}/zlib-$pkgver
+
+	./configure \
+    --prefix=/stage1 \
+    --static
+
+	make
+}
+
+package() {
+	cd ${srcdir}/zlib-$pkgver
+
+	make install DESTDIR=${pkgdir}
+	install -D -m644 LICENSE ${pkgdir}/stage1/share/licenses/zlib/LICENSE
+}
