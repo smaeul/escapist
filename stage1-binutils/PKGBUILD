@@ -1,0 +1,59 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage1-binutils
+pkgver=2.23.2
+pkgrel=1
+pkgdesc="Temporary static assembler and friends - Starch stage 0"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/binutils/"
+license=('GPL')
+makedepends=('stage0-binutils' 'stage0-gcc')
+depends=('stage1-linux-headers' 'stage1-musl')
+options=('staticlibs' '!distcc' '!ccache')
+source=(http://ftp.gnu.org/gnu/binutils/binutils-${pkgver}.tar.bz2{,.sig}
+        binutils-2.23.2-texinfo-5.0.patch)
+md5sums=('4f8fa651e35ef262edc01d60fb45702e'
+         'dfde4428f08d91f309cdcfe92bf28d08'
+         '34e439ce23213a91e2af872dfbb5094c')
+
+prepare() {
+  cd ${srcdir}/binutils-${pkgver}
+
+  sed -i "s#\(-\?lin\)\(ux-gnu\* |\)\( -\?linux-android\*\)#\1\2 \1ux-musl* |\3#g" config.sub
+
+  # http://sourceware.org/git/?p=binutils.git;a=patch;h=e02bf935
+  # http://sourceware.org/git/?p=binutils.git;a=patch;h=935f8542
+  patch -p1 -i ${srcdir}/binutils-2.23.2-texinfo-5.0.patch
+
+  # hack! - libiberty configure tests for header files using "$CPP $CPPFLAGS"
+  sed -i "/ac_cpp=/s/\$CPPFLAGS/\$CPPFLAGS -O2/" libiberty/configure
+
+  rm -rf ${srcdir}/binutils-build
+  mkdir ${srcdir}/binutils-build
+}
+
+build() {
+  cd ${srcdir}/binutils-build
+
+  ${srcdir}/binutils-${pkgver}/configure \
+    --host=$CHOST --prefix=/stage1 \
+    --enable-ld=default --enable-threads --disable-nls \
+    --disable-werror --disable-multilib --disable-shared \
+    --with-lib-path=/stage1/lib --with-pic
+
+  make tooldir=/stage1
+}
+
+package() {
+  cd ${srcdir}/binutils-build
+  make prefix=${pkgdir}/stage1 tooldir=${pkgdir}/stage1 install
+
+  # Add some useful headers
+  mkdir -p ${pkgdir}/stage1/include
+  install -m644 ${srcdir}/binutils-${pkgver}/include/libiberty.h ${pkgdir}/stage1/include
+  install -m644 ${srcdir}/binutils-${pkgver}/include/demangle.h ${pkgdir}/stage1/include
+
+  # Remove unwanted files
+  rm ${pkgdir}/stage1/share/man/man1/{dlltool,nlmconv,windres,windmc}*
+  rm ${pkgdir}/stage1/share/info/{configure,standards}.info
+}
