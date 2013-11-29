@@ -1,0 +1,48 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage2-bzip2
+pkgver=1.0.6
+pkgrel=1
+pkgdesc="A high-quality data compression program"
+arch=('i686' 'x86_64')
+license=('custom')
+url="http://sources.redhat.com/bzip2"
+groups=('base')
+makedepends=('stage1-toolchain')
+source=(http://www.bzip.org/$pkgver/bzip2-$pkgver.tar.gz
+        bzip2-1.0.4-bzip2recover.patch)
+sha1sums=('3f89f861209ce81a6bab1fd1998c0ef311712002'
+          '85ce76fdb67f52f152bba368c1de81132dcdbdb5')
+
+build() {
+  cd "$srcdir/bzip2-$pkgver"
+
+  # use our optimization
+  sed -i "s|-O2|${CFLAGS}|g" Makefile
+
+  patch -Np1 < ../bzip2-1.0.4-bzip2recover.patch
+
+  make bzip2 bzip2recover
+}
+
+package() {
+  cd "$srcdir/bzip2-$pkgver"
+
+  install -dm755 $pkgdir/stage1/{bin,lib,include,share/man/man1}
+
+  install -m755 bzip2 bzip2recover bzdiff bzgrep bzmore $pkgdir/stage1/bin
+  ln -sf bzip2 $pkgdir/stage1/bin/bunzip2
+  ln -sf bzip2 $pkgdir/stage1/bin/bzcat
+
+  install -m644 libbz2.a $pkgdir/stage1/lib
+
+  install -m644 bzlib.h $pkgdir/stage1/include/
+
+  install -m644 bzip2.1 $pkgdir/stage1/share/man/man1/
+  ln -sf bzip2.1 $pkgdir/stage1/share/man/man1/bunzip2.1
+  ln -sf bzip2.1 $pkgdir/stage1/share/man/man1/bzcat.1
+  ln -sf bzip2.1 $pkgdir/stage1/share/man/man1/bzip2recover.1
+
+  install -Dm644 $srcdir/bzip2-${pkgver}/LICENSE \
+                 $pkgdir/stage1/share/licenses/bzip2/LICENSE
+}
