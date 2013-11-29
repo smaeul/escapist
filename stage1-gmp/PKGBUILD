@@ -1,0 +1,28 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage1-gmp
+pkgver=5.1.3
+pkgrel=1
+pkgdesc="Temporary GNU MP library - Starch stage 1"
+arch=('i686' 'x86_64')
+url="http://gmplib.org/"
+depends=('stage1-musl' 'stage0-libstdcpp')
+license=('LGPL3')
+source=(ftp://ftp.gmplib.org/pub/gmp-${pkgver}/gmp-${pkgver}.tar.xz{,.sig})
+md5sums=('e5fe367801ff067b923d1e6a126448aa'
+         'SKIP')
+
+build() {
+  cd "${srcdir}/gmp-${pkgver}"
+
+  ./configure \
+    --host=${CHOST} --prefix=/stage1 \
+    --disable-shared --enable-cxx
+  make
+}
+
+package() {
+  cd "${srcdir}/gmp-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
