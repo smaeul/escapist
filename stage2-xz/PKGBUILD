@@ -1,0 +1,31 @@
+# Maintainer: Samuel Holland <samuel@sholland.net>
+
+pkgname=stage2-xz
+pkgver=5.0.5
+pkgrel=2
+pkgdesc='Library and command line tools for XZ and LZMA compressed files'
+arch=('i686' 'x86_64')
+url='http://tukaani.org/xz/'
+license=('GPL' 'LGPL' 'custom')
+depends=('sh')
+makedepends=('stage1-toolchain')
+source=(http://tukaani.org/xz/xz-${pkgver}.tar.gz{,.sig})
+md5sums=('19d924e066b6fff0bc9d1981b4e53196'
+         'SKIP')
+
+build() {
+	cd ${srcdir}/xz-${pkgver}
+
+	./configure \
+    --build=$CHOST --prefix=/stage1 \
+		--disable-shared --enable-werror
+	make
+}
+
+package() {
+	cd ${srcdir}/xz-${pkgver}
+
+	make DESTDIR=${pkgdir} install
+	install -d -m755 ${pkgdir}/stage1/share/licenses/xz/
+	ln -sf /stage1/share/doc/xz/COPYING ${pkgdir}/stage1/share/licenses/xz/
+}
