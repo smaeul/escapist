@@ -1,0 +1,23 @@
+pkgname=links
+pkgver=2.8
+pkgrel=1
+pkgdesc="Text-based Web Browser"
+arch=('i686' 'x86_64')
+url="http://links.twibright.com/"
+license=('GPL')
+makedepends=('libbz2 liblzma')
+source=(http://links.twibright.com/download/${pkgname}-${pkgver}.tar.bz2)
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= --mandir=/share/man \
+    --enable-javascript --disable-graphics --without-x --with-fb
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
