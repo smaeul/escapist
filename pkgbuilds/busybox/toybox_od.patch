@@ -1,0 +1,11 @@
+--- busybox-1.22.1.old/applets/usage_compressed
++++ busybox-1.22.1/applets/usage_compressed
+@@ -19,7 +19,7 @@
+ exec >"$target.$$"
+ 
+ echo '#define UNPACKED_USAGE "" \'
+-"$loc/usage" | od -v -b \
++"$loc/usage" | od -v -t o1 \
+ | $SED -e 's/^[^ ]*//' \
+ 	-e 's/ //g' \
+ 	-e '/^$/d' \

@@ -1,0 +1,28 @@
+pkgname=busybox
+pkgver=1.22.1
+pkgrel=1
+pkgdesc="Utilities for rescue and embedded systems"
+arch=('i686' 'x86_64')
+url="http://busybox.net/"
+license=('GPL')
+groups=('base')
+source=(http://busybox.net/downloads/${pkgname}-${pkgver}.tar.bz2
+	config)
+install=busybox.install
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  cp $srcdir/config .config
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  install -Dm6755 busybox "${pkgdir}/bin/busybox"
+  ./busybox --list | while read applet
+  do
+    ln -s busybox "${pkgdir}/bin/${applet}"
+  done
+}
