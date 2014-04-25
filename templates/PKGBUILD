@@ -1,0 +1,39 @@
+pkgname=xxxx
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="xxxx Package"
+arch=('i686' 'x86_64')
+url="http://xxxx.org/"
+license=('custom')
+groups=('base')
+depends=('sh')
+makedepends=('libpolarssl')
+source=(http://xxxx.org/pub/${pkgname}/${pkgname}-${pkgver}.tar.gz
+        ${pkgname}-musl.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= \
+    --disable-shared --disable-nls
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make check
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
