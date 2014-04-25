@@ -1,0 +1,56 @@
+pkgname=('bzip2' 'libbz2')
+pkgbase=bzip2
+pkgver=1.0.6
+pkgrel=1
+pkgdesc="bzip2 compression programs and library"
+arch=('i686' 'x86_64')
+url="http://bzip.org/"
+license=('custom')
+source=(http://www.bzip.org/$pkgver/bzip2-$pkgver.tar.gz
+        bzip2-1.0.4-bzip2recover.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  # Use our optimization
+  sed -i.bak "s|-O2|${CFLAGS}|g" Makefile
+
+  patch -p1 -i "${srcdir}/bzip2-1.0.4-bzip2recover.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make bzip2 bzip2recover
+}
+
+check() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make test
+}
+  
+package_bzip2() {
+  depends=('sh')
+
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  install -dm755 "${pkgdir}"/{bin,share/man/man1}
+  install -Dm755 bzip2 bzip2recover bzgrep bzmore bzdiff "${pkgdir}/bin"
+  ln -s bzip2 "${pkgdir}/bin/bunzip2"
+  ln -s bzip2 "${pkgdir}/bin/bzcat"
+  ln -s bzgrep "${pkgdir}/bin/bzegrep"
+  ln -s bzgrep "${pkgdir}/bin/bzfgrep"
+  ln -s bzmore "${pkgdir}/bin/bzless"
+  ln -s bzdiff "${pkgdir}/bin/bzcmp"
+  install -Dm644 bz{ip2,grep,more,diff}.1 "${pkgdir}/share/man/man1"
+  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
+
+package_libbz2() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  install -Dm644 bzlib.h "${pkgdir}/include/bzlib.h"
+  install -Dm644 libbz2.a "${pkgdir}/lib/libbz2.a"
+  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
