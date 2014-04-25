@@ -1,0 +1,44 @@
+pkgname=libreadline
+pkgver=6.3
+pkgrel=1
+pkgdesc="GNU Readline library"
+arch=('i686' 'x86_64')
+url="http://tiswww.case.edu/php/chet/readline/rltop.html"
+license=('GPL')
+depends=('libncursesw' 'ncurses')
+backup=('etc/inputrc')
+source=(http://ftp.gnu.org/gnu/readline/readline-${pkgver}.tar.gz{,.sig}
+        inputrc
+        readline-6.3-vi-last.patch
+        readline-6.3-dispatch-multikey.patch)
+
+prepare() {
+  cd "${srcdir}/readline-${pkgver}"
+
+  # patch from upstream mailing list to fix vi mode
+  patch -p2 -i "${srcdir}/readline-6.3-vi-last.patch"
+
+  # patch from upstream mailing list to fix the crash after pressing Delete twice
+  patch -p2 -i "${srcdir}/readline-6.3-dispatch-multikey.patch"
+}
+
+build() {
+  cd "${srcdir}/readline-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= \
+    --disable-shared --disable-nls
+  make
+}
+
+check() {
+  cd "${srcdir}/readline-${pkgver}"
+
+  make check
+}
+  
+package() {
+  cd "${srcdir}/readline-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 "${srcdir}/inputrc" "${pkgdir}/etc/inputrc"
+}
