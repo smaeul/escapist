@@ -1,0 +1,23 @@
+pkgname=musl
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="C Standard Library"
+arch=('i686' 'x86_64')
+url="http://musl-libc.org/"
+license=('MIT')
+groups=('devel')
+source=(http://musl-libc.org/releases/${pkgname}-${pkgver}.tar.gz)
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --prefix= --syslibdir=/lib \
+    --disable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
