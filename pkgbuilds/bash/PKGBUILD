@@ -1,0 +1,62 @@
+pkgname=bash
+pkgver=4.3
+pkgrel=1
+pkgdesc="GNU Bourne Again Shell"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/bash/bash.html"
+license=('GPL')
+groups=('base')
+depends=('ncurses')
+makedepends=('libreadline')
+provides=('sh')
+backup=(etc/bash{rc,_logout} etc/skel/.bash{rc,_profile,_logout})
+source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
+        dot.bashrc
+        dot.bash_profile
+        dot.bash_logout
+        system.bashrc
+        system.bash_logout
+        bash-4.3-debug-trap.patch
+        bash-4.3-test-nameref.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  # upstream patches I assume will be made official later...
+  patch -p0 -i $srcdir/bash-4.3-debug-trap.patch
+  patch -p0 -i $srcdir/bash-4.3-test-nameref.patch
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  export CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin:/local/bin:/usr/bin\"'
+    -DSTANDARD_UTILS_PATH='\"/bin\"'
+    -DSYS_BASHRC='\"/etc/bashrc\"'
+    -DSYS_BASH_LOGOUT='\"/etc/bash_logout\"'"
+
+  ./configure --build=$CHOST --prefix= \
+    --disable-nls --enable-readline --with-curses \
+    --without-bash-malloc --with-installed-readline
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make check
+}
+  
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+
+  ln -s bash "${pkgdir}/bin/sh"
+
+  install -Dm644 "${srcdir}/dot.bashrc" "${pkgdir}/etc/skel/.bashrc"
+  install -Dm644 "${srcdir}/dot.bash_profile" "${pkgdir}/etc/skel/.bash_profile"
+  install -Dm644 "${srcdir}/dot.bash_logout" "${pkgdir}/etc/skel/.bash_logout"
+  install -Dm644 "${srcdir}/system.bashrc" "${pkgdir}/etc/bashrc"
+  install -Dm644 "${srcdir}/system.bash_logout" "${pkgdir}/etc/bash_logout"
+}
