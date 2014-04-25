@@ -1,0 +1,82 @@
+pkgname=gcc
+pkgver=4.7.3
+pkgrel=1
+pkgdesc="C compiler and related programs"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/gcc/"
+license=('GPL')
+depends=('binutils')
+makedepends=('libgmp' 'libmpc' 'libmpfr' 'libz')
+groups=('devel')
+source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}/${pkgname}-${pkgver}.tar.bz2{,.sig}
+        gcc-4.7.3-musl.diff)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  patch -p1 -i $srcdir/gcc-4.7.3-musl.diff
+  #sed -i.bak -e 's@\./fixinc\.sh@-c true@' -e '/^NATIVE_SYSTEM_HEADER_DIR/s/\/usr//' gcc/Makefile.in
+
+  for file in $(find gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h)
+  do
+    sed -i.bak -e 's@/usr@@g' -e 's@/lib64@/lib@g' "$file"
+  done
+
+  rm -rf "${srcdir}/${pkgname}-build"
+  mkdir "${srcdir}/${pkgname}-build"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-build"
+
+  "${srcdir}/${pkgname}-${pkgver}/configure" \
+    --build=$CHOST --host=$CHOST --prefix= \
+    --libexecdir=/lib --mandir=/share/man \
+    --with-native-system-header-dir=/include \
+    --disable-nls --disable-shared --enable-threads \
+    --enable-languages=c --enable-clocale=generic \
+    --disable-bootstrap --enable-multilib \
+    --disable-libmudflap --disable-libgomp \
+    --with-system-zlib --with-linker-build-id
+  make all-gcc all-target-libgcc
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-build"
+
+  make DESTDIR="${pkgdir}" install-gcc install-target-libgcc
+
+  # Symlink for compatibility
+  ln -s gcc "${pkgdir}/bin/cc"
+
+  # POSIX conformance launcher scripts for c89 and c99
+  cat > $pkgdir/bin/c89 <<"EOF"
+#!/bin/sh
+fl="-std=c89"
+for opt; do
+  case "$opt" in
+    -ansi|-std=c89|-std=iso9899:1990) fl="";;
+    -std=*) echo "`basename $0` called with non ANSI/ISO C option $opt" >&2
+	    exit 1;;
+  esac
+done
+exec gcc $fl ${1+"$@"}
+EOF
+
+  cat > $pkgdir/bin/c99 <<"EOF"
+#!/bin/sh
+fl="-std=c99"
+for opt; do
+  case "$opt" in
+    -std=c99|-std=iso9899:1999) fl="";;
+    -std=*) echo "`basename $0` called with non ISO C99 option $opt" >&2
+	    exit 1;;
+  esac
+done
+exec gcc $fl ${1+"$@"}
+EOF
+
+  chmod 755 "$pkgdir"/bin/c{8,9}9
+
+  rm -r "$pkgdir/lib/gcc/$CHOST/$pkgver/install-tools"
+}
