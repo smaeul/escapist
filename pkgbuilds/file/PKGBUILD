@@ -1,0 +1,35 @@
+pkgname=file
+pkgver=5.17
+pkgrel=1
+pkgdesc="File type identification utility"
+arch=('i686' 'x86_64')
+url="http://www.darwinsys.com/file/"
+license=('custom')
+makedepends=('libz')
+groups=('devel')
+source=(ftp://ftp.astron.com/pub/${pkgname}/${pkgname}-${pkgver}.tar.gz
+        file-5.17-off-by-one.patch
+        ${pkgname}-musl.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  patch -p1 -i "${srcdir}/file-5.17-off-by-one.patch"
+  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= \
+    --datadir=/share/file \
+    --disable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
