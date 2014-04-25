@@ -1,0 +1,62 @@
+pkgname=('libarchive-bin' 'libarchive')
+pkgbase=libarchive
+pkgver=3.1.2
+pkgrel=1
+pkgdesc="Versatile Archive library and tools"
+arch=('i686' 'x86_64')
+url="http://libarchive.org/"
+license=('BSD')
+makedepends=('libbz2' 'liblzma' 'libz')
+source=("http://libarchive.org/downloads/${pkgbase}-${pkgver}.tar.gz"
+        '0001-mtree-fix-line-filename-length-calculation.patch'
+        '0001-Limit-write-requests-to-at-most-INT_MAX.patch'
+        'libarchive-3.1.2-acl.patch')
+
+prepare() {
+  cd "${srcdir}//${pkgbase}-${pkgver}"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=301
+  # upstream commit e65bf287f0133426b26611fe3e80b51267987106
+  patch -p1 -i "${srcdir}/0001-mtree-fix-line-filename-length-calculation.patch"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=329
+  patch -p1 -i "${srcdir}/libarchive-3.1.2-acl.patch"
+
+  # CVE-2013-0211
+  patch -p1 -i "${srcdir}/0001-Limit-write-requests-to-at-most-INT_MAX.patch"
+
+  # Ignore the presense of lchmod in musl, as it is unnecessary and broken
+  sed -i.bak -e 's/lchmod //' configure
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= \
+    --disable-shared --without-xml2
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make check
+}
+  
+package_libarchive-bin() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install-binPROGRAMS install-man1
+  rm -r "${pkgdir}/lib"
+  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
+
+package_libarchive() {
+  depends=('libbz2' 'liblzma' 'libz')
+
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install-libLTLIBRARIES install-man3 install-man5 \
+    install-pkgconfigDATA install-includeHEADERS
+  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
