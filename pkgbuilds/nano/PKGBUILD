@@ -1,0 +1,34 @@
+pkgname=nano
+pkgver=2.2.6
+pkgrel=1
+pkgdesc="GNU Pico text editor clone with enhancements"
+arch=('i686' 'x86_64')
+url="http://nano-editor.org/"
+license=('GPL')
+depends=('ncurses')
+makedepends=('libncursesw')
+groups=('base')
+backup=('etc/nanorc')
+source=(http://nano-editor.org/dist/v2.2/${pkgname}-${pkgver}.tar.gz
+        ${pkgname}-musl.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= --sysconfdir=/etc \
+    --disable-nls --disable-wrapping-as-root
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 doc/nanorc.sample "${pkgdir}/etc/nanorc"
+}
