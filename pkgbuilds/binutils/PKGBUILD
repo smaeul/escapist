@@ -1,0 +1,40 @@
+pkgname=binutils
+pkgver=2.24
+pkgrel=1
+pkgdesc="Assembler, linker, and object file manipulation tools"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/binutils/"
+license=('GPL')
+source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.bz2{,.sig})
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  rm -rf "${srcdir}/${pkgname}-build"
+  mkdir "${srcdir}/${pkgname}-build"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-build"
+
+  "${srcdir}/${pkgname}-${pkgver}/configure" \
+    --build=$CHOST --prefix= \
+    --disable-nls --disable-shared --enable-threads \
+    --enable-multilib \
+    --with-lib-path=/lib:/local/lib
+  make tooldir=/
+}
+
+check() {
+  cd "${srcdir}/${pkgname}-build"
+
+  # unset LDFLAGS as testsuite makes assumptions about which ones are active
+  # do not abort on errors - manually check log files
+  make LDFLAGS="" -k check || true
+}
+  
+package() {
+  cd "${srcdir}/${pkgname}-build"
+
+  make DESTDIR="${pkgdir}" tooldir=/ install
+}
