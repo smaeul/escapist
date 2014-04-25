@@ -1,0 +1,59 @@
+pkgname=('ncurses' 'libncursesw')
+pkgbase=ncurses
+pkgver=5.9
+pkgrel=1
+pkgdesc="Curses emulation library and terminfo database"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/ncurses/"
+license=('MIT')
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig}
+        ncurses-musl.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  patch -p1 -i "${srcdir}/ncurses-musl.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= --mandir=/share/man \
+    --without-shared --with-normal --without-debug --without-cxx \
+    --without-ada --enable-widec --enable-ext-colors --enable-ext-mouse \
+    --enable-overwrite
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make -C test all
+}
+  
+package_ncurses() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install.{data,progs}
+  #rm -r "${pkgdir}/lib"
+
+  install -dm755 "${pkgdir}/share/licenses/${pkgname}"
+  grep -B100 '$Id' README > "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
+
+package_libncursesw() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install.{includes,libs}
+
+  for lib in ncurses form panel menu; do
+    ln -s lib${lib}w.a ${pkgdir}/lib/lib${lib}.a
+  done
+
+  ln -s libncursesw.a ${pkgdir}/lib/libcurses.a
+  ln -s libncursesw.a ${pkgdir}/lib/libcursesw.a
+
+  install -dm755 "${pkgdir}/share/licenses/${pkgname}"
+  grep -B100 '$Id' README > "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
+
