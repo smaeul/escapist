@@ -1,0 +1,35 @@
+pkgname=libz
+pkgver=1.2.8
+pkgrel=1
+pkgdesc="Zlib Compression Library"
+arch=('i686' 'x86_64')
+url="http://zlib.net/"
+license=('custom')
+source=(http://zlib.net/zlib-${pkgver}.tar.xz)
+
+prepare() {
+  cd "${srcdir}/zlib-${pkgver}"
+
+  grep -A 24 '^  Copyright' zlib.h > LICENSE
+}
+
+build() {
+  cd "${srcdir}/zlib-${pkgver}"
+
+  ./configure --prefix= \
+    --static
+  make
+}
+
+check() {
+  cd "${srcdir}/zlib-${pkgver}"
+
+  make test
+}
+  
+package() {
+  cd "${srcdir}/zlib-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
