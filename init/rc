@@ -1,0 +1,14 @@
+#!/bin/sh
+mount -t proc proc /proc
+mount -o remount,rw /
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /tmp
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+ln -s /proc/self/fd /dev/fd
+mdev -s
+hostname `cat /etc/hostname`
+ip link set dev eth0 up
+ip addr add 192.168.1.20/24 dev eth0
+ip route add default via 192.168.1.1
+cd /

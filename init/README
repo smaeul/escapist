@@ -1,0 +1,4 @@
+These files are temporarily here until I figure out if/how to package them.
+They go in /etc, along with /etc/hostname and /etc/resolv.conf. The only
+other file you need to use all of the base packages is ca-certificates.crt
+in /etc/ssl/certs. You can just pull it from any Arch installation for now.
