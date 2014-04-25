@@ -1,0 +1,27 @@
+_srcname=musl
+pkgname=lib32-${_srcname}
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="C Standard Library"
+arch=('x86_64')
+url="http://musl-libc.org/"
+license=('MIT')
+groups=('base-devel')
+source=(http://musl-libc.org/releases/${_srcname}-${pkgver}.tar.gz)
+
+build() {
+  cd "${srcdir}/${_srcname}-${pkgver}"
+
+  CC="gcc -m32" \
+  ./configure --target=i686-linux-musl \
+    --prefix= --libdir=/lib --syslibdir=/lib \
+    --disable-shared
+  make
+}
+
+package() {
+  cd "${srcdir}/${_srcname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+#  rm -r "${pkgdir}/include"
+}
