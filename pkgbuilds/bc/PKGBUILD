@@ -1,0 +1,33 @@
+pkgname=bc
+pkgver=1.06.95
+pkgrel=1
+pkgdesc="Arbitrary precision calculator"
+arch=('i686' 'x86_64')
+url="http://gnu.org/software/bc/"
+license=('GPL')
+makedepends=('libreadline')
+source=(http://alpha.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.bz2{,.sig}
+        bc-1.06.95-void_uninitialized.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  patch -p0 -i "${srcdir}/bc-1.06.95-void_uninitialized.patch"
+
+  sed -i.bak -e 's/makeinfo --no-split/true/' doc/Makefile.in
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= \
+    --mandir=/share/man --infodir=/share/info \
+    --disable-shared --disable-nls --with-readline
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
