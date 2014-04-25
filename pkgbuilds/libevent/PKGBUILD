@@ -1,0 +1,37 @@
+pkgname=libevent
+pkgver=2.0.21
+pkgrel=1
+pkgdesc="Event Notification Library"
+arch=('i686' 'x86_64')
+url="http://www.monkey.org/~provos/libevent/"
+license=('BSD')
+optdepends=('python2: to use event_rpcgen.py')
+source=(https://github.com/downloads/${pkgname}/${pkgname}/${pkgname}-${pkgver}-stable.tar.gz{,.asc}
+        ${pkgname}-musl.patch)
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+
+  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+
+  ./configure --build=$CHOST --prefix= \
+    --disable-shared --disable-nls --disable-openssl
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+
+  make check
+}
+  
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
