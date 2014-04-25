@@ -1,0 +1,10 @@
+--- curl-7.35.0/lib/urldata.h
++++ curl-7.35.0.patched/lib/urldata.h
+@@ -116,6 +116,7 @@
+ #else
+ #include <polarssl/entropy.h>
+ #include <polarssl/ctr_drbg.h>
++#include <polarssl/compat-1.2.h>
+ #endif /* POLARSSL_VERSION_NUMBER<0x01010000 */
+ #endif /* USE_POLARSSL */
+ 

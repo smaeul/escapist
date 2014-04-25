@@ -1,0 +1,64 @@
+pkgname=('curl' 'libcurl')
+pkgbase=curl
+pkgver=7.35.0
+pkgrel=1
+pkgdesc="URL retrieval library and utility"
+arch=('i686' 'x86_64')
+url="http://curl.haxx.se"
+license=('MIT')
+makedepends=('libpolarssl' 'libz')
+checkdepends=('perl')
+source=(http://curl.haxx.se/download/${pkgbase}-${pkgver}.tar.gz{,.asc}
+        polarssl-1.3.patch
+        curlbuild.h)
+
+prepare() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  patch -p1 -i "${srcdir}/polarssl-1.3.patch"
+}
+
+build() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  ./configure --build=$CHOST --prefix= --mandir=/share/man \
+    --disable-shared --disable-nls --enable-ipv6 \
+    --enable-versioned-symbols --enable-threaded-resolver \
+    --with-polarssl --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
+  make
+}
+
+check() {
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make check
+}
+  
+package_curl() {
+  depends=('polarssl')
+  groups=('base')
+
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install-exec
+  rm "${pkgdir}/lib/libcurl.a"
+  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+}
+
+package_libcurl() {
+  depends=('libpolarssl' 'libz')
+
+  cd "${srcdir}/${pkgbase}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install-data
+  install -Dm644 lib/.libs/libcurl.a "${pkgdir}/lib/libcurl.a"
+  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+
+  case $CARCH in
+    x86_64) _curlbuild=curlbuild-64.h ;;
+    *) _curlbuild=curlbuild-32.h ;;
+  esac
+
+  mv "${pkgdir}/include/curl/curlbuild.h" "${pkgdir}/include/curl/${_curlbuild}"
+  install -Dm644 "${srcdir}/curlbuild.h" "${pkgdir}/include/curl/curlbuild.h"
+}
