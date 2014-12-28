@@ -1,8 +1,7 @@
-NAME="Static e-Linux-tricity"
-ID=static
-PRETTY_NAME="Static e-Linux-tricity"
+NAME="Escapist Linux"
+ID=escapist
+PRETTY_NAME="Escapist Linux"
 ANSI_COLOR="0;36"
-HOME_URL="https://sholland.net/"
-SUPPORT_URL="mailto:samuel@sholland.net"
-BUG_REPORT_URL="mailto:samuel@sholland.net"
-
+HOME_URL="https://pkg.smaeul.me/"
+SUPPORT_URL="https://pkg.smaeul.me/"
+BUG_REPORT_URL="https://pkg.smaeul.me/"
