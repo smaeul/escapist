@@ -1,7 +1,7 @@
-#!/usr/bin/awk -f
+#!/bin/awk -f
 
 BEGIN {
-	print "# See the full IANA XML file at: /usr/share/iana-etc/port-numbers.iana\n"
+	print "# See the full IANA XML file at: /share/iana/service-names-port-numbers.xml\n"
 	FS="[<>]"
 }
 

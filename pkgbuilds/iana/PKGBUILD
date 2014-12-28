@@ -1,0 +1,34 @@
+pkgbase=iana
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2014.11
+pkgdesc="IANA protocol and service name assignments"
+arch=(any)
+license=(unknown)
+url="http://www.iana.org/protocols"
+makedepends=(awk)
+backup=(etc/{protocols,services})
+source=(http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xml
+        http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+        protocols.awk
+        services.awk)
+sha256sums=('6097b995fa635e5da74ae53d8286898640222351cf66bbd4816d813fe009adce'
+            'ac5546ed70934d610cc0a3fb7ca6155b616d1739fc8712d180d72007729086ed'
+            '1ce4fc298198df12e68fc8e99d33ea1c60f74daba800f9eec74c7ae6e42aef2d'
+            '5a78eb4c6fcb0adbefca0d0b3740a74d8905763faba99e8b361350d52de20e06')
+
+build() {
+  cd ${srcdir}
+
+  awk -f protocols.awk < protocol-numbers.xml > protocols
+  awk -f services.awk < service-names-port-numbers.xml > services
+}
+
+package() {
+  cd ${srcdir}
+
+  install -Dm644 protocols ${pkgdir}/etc/protocols
+  install -Dm644 services ${pkgdir}/etc/services
+  install -Dm644 protocol-numbers.xml ${pkgdir}/share/iana/protocol-numbers.xml
+  install -Dm644 service-names-port-numbers.xml ${pkgdir}/share/iana/service-names-port-numbers.xml
+}
