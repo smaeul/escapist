@@ -1,0 +1,21 @@
+source PKGBUILD
+unset pkgname
+
+depends+=(libc-shared)
+pkgname=${pkgbase}-shared
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix=/usr
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+
+  find ${pkgdir} -type f -not -name '*.so*' -delete
+}
