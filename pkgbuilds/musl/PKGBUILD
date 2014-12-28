@@ -1,23 +1,27 @@
-pkgname=musl
-pkgver=1.0.0
+pkgbase=musl
+pkgname=libc
 pkgrel=1
-pkgdesc="C Standard Library"
-arch=('i686' 'x86_64')
-url="http://musl-libc.org/"
-license=('MIT')
-groups=('devel')
-source=(http://musl-libc.org/releases/${pkgname}-${pkgver}.tar.gz)
+pkgver=1.1.5
+pkgdesc="C standard library"
+arch=(i686 x86_64)
+groups=(devel)
+license=(MIT)
+url="http://www.musl-libc.org/"
+options=('!buildflags')
+source=(http://www.musl-libc.org/releases/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('352362b1724cc9740f4c3ce0fe02aae45e4de9809ea4ac961f31aedc11b87393')
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --prefix= --syslibdir=/lib \
+  ./configure --target=$CHOST \
+    --prefix= \
     --disable-shared
   make
 }
 
-package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+package_libc() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
+  make DESTDIR=${pkgdir} install
 }
