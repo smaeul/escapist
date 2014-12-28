@@ -1,0 +1,33 @@
+pkgbase=gmp
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=6.0.0a
+pkgdesc="GNU multiprecision arithmetic library"
+arch=(i686 x86_64)
+license=(LGPL3)
+url="http://www.gmplib.org/"
+makedepends=(bison flex m4)
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.xz{,.sig})
+sha256sums=('9156d32edac6955bc53b0218f5f3763facb890b73a835d5e1b901dcf8eb8b764'
+            'SKIP')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver%a}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver%a}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver%a}
+
+  make DESTDIR=${pkgdir} install
+}
