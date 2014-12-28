@@ -1,0 +1,41 @@
+pkgbase=mpc
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=1.0.2
+pkgdesc="Multiprecision complex arithmetic library"
+arch=(i686 x86_64)
+license=(LGPL)
+url="http://www.multiprecision.org/"
+depends=(libgmp libmpfr)
+source=(http://www.multiprecision.org/${pkgbase}/download/${pkgbase}-${pkgver}.tar.gz{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('b561f54d8a479cee3bc891ee52735f18ff86712ba30f036f8b8537bae380c488'
+            'SKIP'
+            '3f50e2e1f5e0bbb4190e5622a02862e30d181a3e138598a4e7ecd6a5673f70ae')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
