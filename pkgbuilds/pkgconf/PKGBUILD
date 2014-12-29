@@ -1,0 +1,33 @@
+pkgbase=pkgconf
+pkgname=pkgconf
+pkgrel=1
+pkgver=0.9.6
+pkgdesc="Library dependency resolver"
+arch=(i686 x86_64)
+license=(MIT)
+url="http://github.com/pkgconf/pkgconf"
+conflicts=(pkg-config)
+provides=(pkg-config)
+source=(http://rabbit.dereferenced.org/~nenolod/distfiles/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('c40a77543fe5c7259b813f70ddaf229c2760a250d1cf2ccef60b81fb1d3fc299')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix=
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  ln -s pkgconf ${pkgdir}/bin/pkg-config
+}
