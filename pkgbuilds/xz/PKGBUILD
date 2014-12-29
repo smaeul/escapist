@@ -1,42 +1,45 @@
-pkgname=('xz' 'liblzma')
 pkgbase=xz
-pkgver=5.0.5
+pkgname=(xz liblzma)
 pkgrel=1
-pkgdesc="XZ/LZMA compression programs and library"
-arch=('i686' 'x86_64')
-url="http://tukaani.org/xz/"
-license=('GPL' 'LGPL' 'custom')
-source=(http://tukaani.org/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig})
+pkgver=5.2.0
+pkgdesc="xz compression utilities"
+arch=(i686 x86_64)
+license=(GPL LGPL custom)
+url="http://www.xz.org/"
+source=(http://www.tukaani.org/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig})
+sha256sums=('231ef369982240bb20ed7cffa52bb12a4a297ce6871f480ab85e8a7ba98bf3d6'
+            'SKIP')
 
 build() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= \
-    --disable-shared --disable-nls
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
   make
 }
 
 check() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
   make check
 }
-  
+
 package_xz() {
-  depends=('sh')
-  groups=('devel')
+  groups=(devel)
+  depends=(sh)
 
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install-exec
-  rm "${pkgdir}/lib/liblzma.a"
-  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+  make DESTDIR=${pkgdir} install-exec
+  rm -r ${pkgdir}/lib
+  install -Dm644 COPYING ${pkgdir}/share/licenses/custom/${pkgname}
 }
 
 package_liblzma() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install-data
-  install -Dm644 src/liblzma/.libs/liblzma.a "${pkgdir}/lib/liblzma.a"
-  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/bin
+  install -Dm644 COPYING ${pkgdir}/share/licenses/custom/${pkgname}
 }
