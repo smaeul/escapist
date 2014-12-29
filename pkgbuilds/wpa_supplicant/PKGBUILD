@@ -1,0 +1,41 @@
+pkgbase=wpa_supplicant
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2.3
+pkgdesc="Authentication utility for WPA wireless networks"
+arch=(i686 x86_64)
+groups=(net)
+license=(BSD)
+url="http://hostap.epitest.fi/wpa_supplicant/"
+makedepends=(libnl libreadline libressl)
+backup=(etc/wpa_supplicant/wpa_supplicant.conf)
+source=(http://w1.fi/releases/${pkgbase}-${pkgver}.tar.gz
+        config)
+sha256sums=('eaaa5bf3055270e521b2dff64f2d203ec8040f71958b8588269a82c00c9d7b6a'
+            '63a15c3ac4bb9edc9c1c1b4a93e32b8a181e1a8fb266dfabe4e29dbb6f8bdaea')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}/${pkgbase}
+
+  cp ${srcdir}/config .config
+
+  sed -i 's/-lncurses -lreadline/-lreadline -lncurses/' Makefile
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}/${pkgbase}
+
+  make LIBDIR=/lib BINDIR=/bin
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}/${pkgbase}
+
+  make LIBDIR=/lib BINDIR=/bin DESTDIR=${pkgdir} install
+
+  install -Dm644 wpa_supplicant.conf ${pkgdir}/etc/wpa_supplicant/wpa_supplicant.conf
+  install -dm755 ${pkgdir}/share/man/man{5,8}
+  install -m644 doc/docbook/*.5 ${pkgdir}/share/man/man5
+  install -m644 doc/docbook/*.8 ${pkgdir}/share/man/man8
+  rm ${pkgdir}/share/man/man8/wpa_{gui,priv}.8
+}
