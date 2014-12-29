@@ -1,0 +1,37 @@
+pkgbase=attr
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=2.4.47
+pkgdesc="Extended attribute support library"
+arch=(i686 x86_64)
+license=(LGPL)
+url="http://savannah.nongnu.org/projects/attr/"
+makedepends=(gettext)
+source=(http://download.savannah.gnu.org/releases/${pkgbase}/${pkgbase}-${pkgver}.src.tar.gz{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('25772f653ac5b2e3ceeb89df50e4688891e21f723c460636548971652af0a859'
+            'SKIP'
+            'f0f88ed5ba7950266196538d94bb2b16ca11e8d84a236a56f72ad57b116ac6db')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  INSTALL_USER=root INSTALL_GROUP=root \
+  ./configure --build=$CHOST \
+    --prefix= --libdir=/lib --libexecdir=/lib \
+    --disable-shared
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install install-lib install-dev
+  install -Dm644 libattr/.libs/libattr.a ${pkgdir}/lib/libattr.a
+}
