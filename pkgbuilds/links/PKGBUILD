@@ -1,23 +1,36 @@
-pkgname=links
-pkgver=2.8
+pkgbase=links
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Text-based Web Browser"
-arch=('i686' 'x86_64')
+pkgver=2.9
+pkgdesc="Text-based web browser"
+arch=(i686 x86_64)
+groups=(net)
+license=(GPL)
 url="http://links.twibright.com/"
-license=('GPL')
-makedepends=('libbz2 liblzma')
-source=(http://links.twibright.com/download/${pkgname}-${pkgver}.tar.bz2)
+makedepends=(libbz2 liblzma libressl libz)
+source=(http://links.twibright.com/download/${pkgname}-${pkgver}.tar.bz2
+        ${pkgbase}-libressl.patch)
+sha256sums=('4360ead54d5f41da16b2f4c0033317ca775f40c1e658a29e9e7f8ce4bc23878f'
+            'd2dacfb4d2daaba2f622b929ed9a4b89e3084242a8ea81beee1dd2fbae4ceae5')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-libressl.patch
+}
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= --mandir=/share/man \
-    --enable-javascript --disable-graphics --without-x --with-fb
+  ./configure --build=$CHOST \
+    --prefix= --mandir=/share/man \
+    --enable-javascript --disable-graphics \
+    --without-x --with-fb
   make
 }
 
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
+  make DESTDIR=${pkgdir} install
 }
