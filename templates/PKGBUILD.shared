@@ -8,7 +8,7 @@ build() {
   cd ${srcdir}/${pkgbase}-${pkgver}
 
   ./configure --build=$CHOST \
-    --prefix=/usr
+    --prefix=
   make
 }
 

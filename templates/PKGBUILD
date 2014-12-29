@@ -22,7 +22,8 @@ prepare() {
 build() {
   cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix=/usr
+  ./configure --build=$CHOST \
+    --prefix=
   make
 }
 
@@ -36,5 +37,5 @@ package() {
   cd ${srcdir}/${pkgbase}-${pkgver}
 
   make DESTDIR=${pkgdir} install
-  install -Dm644 LICENSE ${pkgdir}/usr/share/licenses/custom/${pkgname}
+  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
 }
