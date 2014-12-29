@@ -1,0 +1,33 @@
+pkgbase=libnl
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=3.2.25
+pkgdesc="Library for interacting with netlink sockets"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.infradead.org/~tgr/libnl/"
+makedepends=(flex bison)
+backup=(etc/libnl/{classid,pktloc})
+source=(http://www.infradead.org/~tgr/${pkgbase}/files/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('8beb7590674957b931de6b7f81c530b85dc7c1ad8fbda015398bc1e8d1ce8ec5')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= --sysconfdir=/etc --sbindir=/bin \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
