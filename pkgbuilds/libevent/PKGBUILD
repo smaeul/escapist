@@ -1,37 +1,41 @@
-pkgname=libevent
-pkgver=2.0.21
+pkgbase=libevent
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Event Notification Library"
-arch=('i686' 'x86_64')
-url="http://www.monkey.org/~provos/libevent/"
-license=('BSD')
-optdepends=('python2: to use event_rpcgen.py')
-source=(https://github.com/downloads/${pkgname}/${pkgname}/${pkgname}-${pkgver}-stable.tar.gz{,.asc}
-        ${pkgname}-musl.patch)
+pkgver=2.0.21
+pkgdesc="Event notification library"
+arch=(i686 x86_64)
+license=(BSD)
+url="http://libevent.org/"
+depends=(libressl libz)
+source=(https://github.com/downloads/${pkgbase}/${pkgbase}/${pkgbase}-${pkgver}-stable.tar.gz{,.asc}
+        ${pkgbase}-musl.patch)
+sha256sums=('22a530a8a5ba1cb9c080cba033206b17dacd21437762155c6d30ee6469f574f5'
+            'SKIP'
+            '3f50e2e1f5e0bbb4190e5622a02862e30d181a3e138598a4e7ecd6a5673f70ae')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+  cd ${srcdir}/${pkgbase}-${pkgver}-stable
 
-  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+  cd ${srcdir}/${pkgbase}-${pkgver}-stable
 
-  ./configure --build=$CHOST --prefix= \
-    --disable-shared --disable-nls --disable-openssl
+  ./configure --build=$CHOST \
+    --prefix= \
+    --enable-openssl --disable-shared
   make
 }
 
 check() {
-  cd "${srcdir}/${pkgname}-${pkgver}-stable"
+  cd ${srcdir}/${pkgbase}-${pkgver}-stable
 
   make check
 }
-  
-package() {
-  cd "${srcdir}/${pkgname}-${pkgver}-stable"
 
-  make DESTDIR="${pkgdir}" install
-  install -Dm644 LICENSE "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}-stable
+
+  make DESTDIR=${pkgdir} install
 }
