@@ -1,40 +1,43 @@
-pkgname=binutils
-pkgver=2.24
+pkgbase=binutils
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Assembler, linker, and object file manipulation tools"
-arch=('i686' 'x86_64')
+pkgver=2.24
+pkgdesc="Utilities for assembling, linking, and manipulating object files"
+arch=(i686 x86_64)
+groups=(devel)
+license=(GPL)
 url="http://www.gnu.org/software/binutils/"
-license=('GPL')
-source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.bz2{,.sig})
+# NOTE: configure won't detect libfl without flex
+makedepends=(flex libfl libz)
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2{,.sig})
+sha256sums=('e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137'
+            'SKIP')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  rm -rf "${srcdir}/${pkgname}-build"
-  mkdir "${srcdir}/${pkgname}-build"
+  rm -rf ${srcdir}/${pkgbase}-build
+  mkdir ${srcdir}/${pkgbase}-build
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-build"
+  cd ${srcdir}/${pkgbase}-build
 
-  "${srcdir}/${pkgname}-${pkgver}/configure" \
-    --build=$CHOST --prefix= \
-    --disable-nls --disable-shared --enable-threads \
-    --enable-multilib \
-    --with-lib-path=/lib:/local/lib
-  make tooldir=/
+  ${srcdir}/${pkgbase}-${pkgver}/configure --build=$CHOST --host=$CHOST \
+    --prefix= \
+    --enable-threads --disable-shared \
+    --with-lib-path=/lib
+  make tooldir=
 }
 
 check() {
-  cd "${srcdir}/${pkgname}-build"
+  cd ${srcdir}/${pkgbase}-build
 
-  # unset LDFLAGS as testsuite makes assumptions about which ones are active
-  # do not abort on errors - manually check log files
-  make LDFLAGS="" -k check || true
+  make check
 }
-  
-package() {
-  cd "${srcdir}/${pkgname}-build"
 
-  make DESTDIR="${pkgdir}" tooldir=/ install
+package() {
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} tooldir= install
 }
