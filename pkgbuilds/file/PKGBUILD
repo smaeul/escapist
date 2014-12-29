@@ -1,35 +1,58 @@
-pkgname=file
-pkgver=5.17
+pkgbase=file
+pkgname=(file libmagic)
 pkgrel=1
+pkgver=5.21
 pkgdesc="File type identification utility"
-arch=('i686' 'x86_64')
+arch=(i686 x86_64)
+license=(custom)
 url="http://www.darwinsys.com/file/"
-license=('custom')
-makedepends=('libz')
-groups=('devel')
-source=(ftp://ftp.astron.com/pub/${pkgname}/${pkgname}-${pkgver}.tar.gz
-        file-5.17-off-by-one.patch
-        ${pkgname}-musl.patch)
+makedepends=(libz)
+source=(ftp://ftp.astron.com/pub/${pkgbase}/${pkgbase}-${pkgver}.tar.gz
+        ${pkgbase}-musl.patch
+        ${pkgbase}-sigpipe.patch)
+sha256sums=('1a48741d3923c4cc73267109b8a396c0ce3aebe004181f3efb1b0a228d230bb6'
+            '3f50e2e1f5e0bbb4190e5622a02862e30d181a3e138598a4e7ecd6a5673f70ae'
+            'afbd31b4ff3cca9f7dfb73a32f625de4c66eaa02e53a1b4c237f8702b49b4bba')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  patch -p1 -i "${srcdir}/file-5.17-off-by-one.patch"
-  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+  patch -p1 -i ${srcdir}/${pkgbase}-sigpipe.patch
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= \
-    --datadir=/share/file \
+  ./configure --build=$CHOST \
+    --prefix= \
     --disable-shared
   make
 }
 
-package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
-  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+  make check
+}
+
+package_file() {
+  groups=(devel)
+  depends=(bzip2 xz)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{include,lib,share/man/man3}
+  install -Dm644 COPYING ${pkgdir}/share/licenses/custom/${pkgname}
+}
+
+package_libmagic() {
+  depends=(libz)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{bin,share/{man/man{1,4},misc}}
+  install -Dm644 COPYING ${pkgdir}/share/licenses/custom/${pkgname}
 }

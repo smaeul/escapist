@@ -1,0 +1,10 @@
+--- a/src/compress.c
++++ b/src/compress.c
+@@ -516,7 +516,6 @@ uncompressbuf(struct magic_set *ms, int fd, size_t method,
+ #ifdef DEBUG
+ 			(void)fprintf(stderr, "Child status (0x%x)\n", status);
+ #endif
+-			n = NODATA;
+ 		}
+ 
+ 		(void) close(fdin[0]);
