@@ -1,53 +1,61 @@
-pkgname=gcc
-pkgver=4.7.3
+pkgbase=gcc
+pkgname=(gcc libgcc libstdc++)
 pkgrel=1
-pkgdesc="C compiler and related programs"
-arch=('i686' 'x86_64')
+pkgver=4.7.4
+pkgdesc="GNU Compiler Collection"
+arch=(i686 x86_64)
+license=(GPL)
 url="http://www.gnu.org/software/gcc/"
-license=('GPL')
-depends=('binutils')
-makedepends=('libgmp' 'libmpc' 'libmpfr' 'libz')
-groups=('devel')
-source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}/${pkgname}-${pkgver}.tar.bz2{,.sig}
-        gcc-4.7.3-musl.diff)
+makedepends=(libgmp libmpc libmpfr libz)
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('92e61c6dc3a0a449e62d72a38185fda550168a86702dea07125ebd3ec3996282'
+            'SKIP'
+            '350c0fa9b1995080616bf577590ad7ee42360da0ba7d5767112141c093040cbf')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  patch -p1 -i $srcdir/gcc-4.7.3-musl.diff
-  #sed -i.bak -e 's@\./fixinc\.sh@-c true@' -e '/^NATIVE_SYSTEM_HEADER_DIR/s/\/usr//' gcc/Makefile.in
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
 
-  for file in $(find gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h)
+  for file in $(find gcc/config -name *linux* -o -name *sysv4*) gcc/genmultilib
   do
-    sed -i.bak -e 's@/usr@@g' -e 's@/lib64@/lib@g' "$file"
+    sed -i.bak -e 's@/lib64@/lib@g' "$file"
   done
 
-  rm -rf "${srcdir}/${pkgname}-build"
-  mkdir "${srcdir}/${pkgname}-build"
+  rm -rf ${srcdir}/${pkgbase}-build
+  mkdir ${srcdir}/${pkgbase}-build
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-build"
+  cd ${srcdir}/${pkgbase}-build
 
-  "${srcdir}/${pkgname}-${pkgver}/configure" \
-    --build=$CHOST --host=$CHOST --prefix= \
-    --libexecdir=/lib --mandir=/share/man \
-    --with-native-system-header-dir=/include \
-    --disable-nls --disable-shared --enable-threads \
-    --enable-languages=c --enable-clocale=generic \
-    --disable-bootstrap --enable-multilib \
-    --disable-libmudflap --disable-libgomp \
-    --with-system-zlib --with-linker-build-id
-  make all-gcc all-target-libgcc
+  ${srcdir}/${pkgbase}-${pkgver}/configure --build=$CHOST \
+    --prefix= --libexecdir=/lib --mandir=/share/man \
+    --with-linker-build-id --with-native-system-header-dir=/include --with-system-zlib \
+    --enable-__cta_atexit --enable-clocale=generic --enable-languages=c,c++ \
+    --enable-threads=posix \
+    --disable-bootstrap --disable-libstdcxx-pch --disable-lto-plugin --disable-multilib \
+    --disable-shared
+  make all-gcc all-target-libgcc all-target-libstdc++-v3
 }
 
-package() {
-  cd "${srcdir}/${pkgname}-build"
+check() {
+  cd ${srcdir}/${pkgbase}-build
 
-  make DESTDIR="${pkgdir}" install-gcc install-target-libgcc
+  make check
+}
+
+package_gcc() {
+  groups=(devel)
+  depends=(binutils libgcc libstdc++)
+
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} install-gcc
 
   # Symlink for compatibility
-  ln -s gcc "${pkgdir}/bin/cc"
+  ln -s gcc ${pkgdir}/bin/cc
 
   # POSIX conformance launcher scripts for c89 and c99
   cat > $pkgdir/bin/c89 <<"EOF"
@@ -62,7 +70,6 @@ for opt; do
 done
 exec gcc $fl ${1+"$@"}
 EOF
-
   cat > $pkgdir/bin/c99 <<"EOF"
 #!/bin/sh
 fl="-std=c99"
@@ -75,8 +82,23 @@ for opt; do
 done
 exec gcc $fl ${1+"$@"}
 EOF
+  chmod 755 ${pkgdir}/bin/c{8,9}9
 
-  chmod 755 "$pkgdir"/bin/c{8,9}9
+  rm -r ${pkgdir}/lib/gcc/$CHOST/${pkgver}/include-fixed
+  rm -r ${pkgdir}/lib/gcc/$CHOST/${pkgver}/install-tools
+}
 
-  rm -r "$pkgdir/lib/gcc/$CHOST/$pkgver/install-tools"
+package_libgcc() {
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} install-target-libgcc
+  rm -r ${pkgdir}/lib/gcc/$CHOST/${pkgver}/include
+}
+
+package_libstdc++() {
+  depends=(libgcc)
+
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} install-target-libstdc++-v3
 }
