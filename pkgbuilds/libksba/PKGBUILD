@@ -1,0 +1,32 @@
+pkgbase=libksba
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=1.3.2
+pkgdesc="A CMS and X.509 library"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.gnupg.org"
+depends=(libgpg-error)
+source=(ftp://ftp.gnupg.org/gcrypt/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('eb95537955dfc2845690a4cc3836074fa6d0a2c2ca2cbf1759364d3bd9868406')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
