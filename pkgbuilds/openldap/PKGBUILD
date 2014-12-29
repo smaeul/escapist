@@ -1,0 +1,46 @@
+pkgbase=openldap
+pkgname=libldap
+pkgrel=1
+pkgver=2.4.40
+pkgdesc="LDAP client library"
+arch=(i686 x86_64)
+license=(custom)
+url="http://www.openldap.org/"
+depends=(libressl)
+backup=(etc/openldap/ldap.conf)
+source=(ftp://ftp.openldap.org/pub/OpenLDAP/${pkgbase}-release/${pkgbase}-${pkgver}.tgz
+        ${pkgbase}-musl.patch)
+sha256sums=('d12611a5c25b6499293c2bb7b435dc2b174db73e83f5a8cb7e34f2ce5fa6dadb'
+            '27e7eefd08c99a7a7c537bff842b2439d43aefe07c6873687327c4d2166d4ae6')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= --mandir=/share/man --libexecdir=/lib \
+    --sysconfdir=/etc --localstatedir=/var/lib/openldap --sbindir=/bin \
+    --with-threads --with-tls=openssl --without-mp --without-fetch \
+    --enable-ipv6 --enable-local --disable-shared --disable-slapd
+  make depend
+  make -C libraries
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  for dir in include libraries doc/man/man3
+  do
+    make -C $dir DESTDIR=${pkgdir} install
+  done
+
+  rm ${pkgdir}/etc/openldap/*.default
+
+  install -Dm655 doc/man/man5/ldap.conf.5 ${pkgdir}/share/man/man5/ldap.conf.5
+  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
+}
