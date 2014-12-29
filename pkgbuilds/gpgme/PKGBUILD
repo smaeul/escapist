@@ -1,0 +1,41 @@
+pkgbase=gpgme
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=1.5.1
+pkgdesc="GPG made easy - GnuPG wrapper"
+arch=(i686 x86_64)
+license=(LGPL)
+url="http://www.gnupg.org"
+depends=(gnupg libassuan libgpg-error)
+source=(ftp://ftp.gnupg.org/gcrypt/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('6c2f3af8ceeb303277d44ec0216d9a1271701f65b91d5942264cf7cefb4a11e3'
+            'SKIP'
+            'f614ae26ca3e114a7ff1eb59730adefd31a247cf20bb8b1f0be4c95ee417f71f')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
