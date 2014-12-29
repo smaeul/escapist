@@ -1,0 +1,37 @@
+pkgbase=acl
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=2.2.52
+pkgdesc="Access control list library and utilities"
+arch=(i686 x86_64)
+license=(LGPL)
+url="http://savannah.nongnu.org/projects/acl/"
+depends=(libattr)
+makedepends=(gettext)
+source=(http://download.savannah.gnu.org/releases/${pkgbase}/${pkgbase}-${pkgver}.src.tar.gz{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('179074bb0580c06c4b4137be4c5a92a701583277967acdb5546043c7874e0d23'
+            'SKIP'
+            '3f50e2e1f5e0bbb4190e5622a02862e30d181a3e138598a4e7ecd6a5673f70ae')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= --libdir=/lib --libexecdir=/lib \
+    --disable-shared
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DIST_ROOT=${pkgdir} install install-lib install-dev
+  install -Dm644 libacl/.libs/libacl.a ${pkgdir}/lib/libacl.a
+}
