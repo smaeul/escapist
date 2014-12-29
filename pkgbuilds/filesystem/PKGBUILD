@@ -1,6 +1,6 @@
 pkgname=filesystem
 pkgrel=1
-pkgver=2014.12
+pkgver=2015.01
 pkgdesc="Base filesystem structure"
 arch=(any)
 groups=(base)
@@ -40,7 +40,7 @@ sha256sums=('f7e36bdb3671ddcd60f2a3bac2e8095fc10a77d2d1405f6431c89c615b53e223'
             'b157ebb45f5159c037c2bbac13dc855385ad7ae506c3b8bf8dd96d916dcdc71c'
             'd1b45c0d901b7a0ec1bcab2cbc07994c270b6bb636ee3616cd56268a31ef1c70'
             'fdaecb641f53fd030e593850ce17b9dbe2ae001a855b46b659b0d2102e5cafbb'
-            'ef6e2b554e8cf366b12c16c42b8aaeae9dcef8a887e6b2b64201956023f32aba'
+            '7762b65442cd3e930d9b4ec470e01bc53938bc5ed3d7aedeed47977b78f54843'
             'ba8de1f1987d75309cd6696298eb388e12d629a16cc0bb87032076eb6c3073ba'
             'dac01796d878ba0c8185069c7bd3828fbe2fc91245dc01c021ab2f9f7c67d1b0'
             'c9572f5efeade990942155e935ff8bbc469af71e6b9c53876c028e9d43d29058')
