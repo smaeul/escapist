@@ -1,46 +1,26 @@
-pkgname=tmux
-pkgver=1.9a
+pkgbase=tmux
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Terminal Multiplexer"
-arch=('i686' 'x86_64')
-url="http://tmux.sourceforge.net/"
-license=('BSD')
-depends=('ncurses')
-makedepends=('libncursesw' 'libevent')
-source=(http://downloads.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tar.gz
-        LICENSE)
-#        ${pkgname}-musl.patch)
-
-prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-
-#  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
-}
+pkgver=1.9a
+pkgdesc="Terminal multiplexer"
+arch=(i686 x86_64)
+license=(BSD)
+url="http://www.tmux.sourceforge.net/"
+depends=(ncurses)
+makedepends=(libevent libncursesw)
+source=(http://downloads.sourceforge.net/${pkgbase}/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('c5e3b22b901cf109b20dab54a4a651f0471abd1f79f6039d79b250d21c2733f5')
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= \
-    --disable-shared --disable-nls
+  ./configure --build=$CHOST \
+    --prefix=
   make
 }
 
-check() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-
-  make check
-}
-  
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
-  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/share/licenses/${pkgname}/LICENSE"
-
-  install -dm755 "${pkgdir}/share/tmux"
-  install -m644 examples/* "${pkgdir}/share/tmux"
-  install -Dm644 examples/tmux.vim "${pkgdir}/share/vim/vimfiles/syntax/tmux.vim"
-
-  install -dm755 "${pkgdir}/share/bash-completion/completions"
-  mv "${pkgdir}/share/tmux/bash_completion_tmux.sh" "${pkgdir}/share/bash-completion/completions/tmux"
+  make DESTDIR=${pkgdir} install
 }
