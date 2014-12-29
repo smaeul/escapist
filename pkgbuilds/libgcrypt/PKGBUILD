@@ -1,0 +1,32 @@
+pkgbase=libgcrypt
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=1.6.2
+pkgdesc="A general-purpose crypto library based on the code from GnuPG"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.gnupg.org/"
+depends=(libgpg-error)
+source=(ftp://ftp.gnupg.org/gcrypt/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('de084492a6b38cdb27b67eaf749ceba76bf7029f63a9c0c3c1b05c88c9885c4c')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
