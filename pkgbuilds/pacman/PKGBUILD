@@ -1,97 +1,77 @@
-pkgname=pacman
-pkgver=4.1.2
+pkgbase=pacman
+pkgname=(${pkgbase} libalpm)
 pkgrel=1
-pkgdesc="A library-based package manager with dependency support"
-arch=('i686' 'x86_64')
+pkgver=4.1.2
+pkgdesc="An advanced package manager from Arch Linux"
+arch=(i686 x86_64)
+license=(GPL)
 url="http://www.archlinux.org/pacman/"
-license=('GPL')
-groups=('base')
-depends=('bash>=4.2' 'libarchive-bin')
-# 'gpgme' 'curl')
-makedepends=('libarchive' 'libcurl')
-checkdepends=('python2' 'fakechroot')
-optdepends=('fakeroot: for makepkg usage as normal user')
-backup=(etc/pacman.conf etc/makepkg.conf)
-source=(ftp://ftp.archlinux.org/other/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
-        pacman.conf.i686
-        pacman.conf.x86_64
-        makepkg.conf
-        ${pkgname}-musl.patch)
+checkdepends=(python)
+makedepends=(libarchive libcurl libgpgme libressl m4 pkg-config)
+source=(ftp://ftp.archlinux.org/other/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig}
+        ${pkgbase}-musl.patch)
+sha256sums=('7c059b444735ee254cfbd8dc2fac8c5d61453601f8adaf001c7038cdc673334c'
+            'SKIP'
+            'b0f97c583852653ab1bb0807d0232b87cee3d2e9b5d9ba0fb79a2451dad3d8fb')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
 
-  # remove duplicate polarssl-based md5 implementation
-  sed -i.bak -e 's/= libalpm_la-md5.lo/= /g' lib/libalpm/Makefile.in
-
-  # remove gnu option from du in makepkg
-  sed -i.bak -e 's/ --apparent-size//g' configure
-
-  # convert openssl usage to polarssl for checksums
-  sed -i.bak -e 's/openssl/generic_sum/g' \
-             -e 's/dgst -//g' \
-             -e 's/sum##\* /sum%% */g' scripts/makepkg.sh.in
+  sed -i.bak -e 's/ --apparent-size//' configure
+  sed -i.bak -e 's/ --follow-symlinks//' configure
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  LIBARCHIVE_CFLAGS=-I/include LIBARCHIVE_LIBS="-L/lib -larchive -lz -lbz2 -llzma" \
-  LIBCURL_CFLAGS=-I/include LIBCURL_LIBS="-L/lib -lcurl -lpolarssl" \
-  ./configure --build=$CHOST --prefix= \
-    --disable-shared --disable-nls --disable-doc \
+  DUPATH=du \
+  ./configure --build=$CHOST \
+    --prefix= --sysconfdir=/etc --localstatedir=/var \
     --with-scriptlet-shell=/bin/bash \
-    --without-openssl
+    --with-pkg-ext=.pkg.tar.xz --with-src-ext=.src.tar.xz \
+    --disable-doc --disable-shared
   make
   make -C contrib
 }
 
 check() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
   make check
 }
-  
-package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
 
-  make DESTDIR="${pkgdir}" install
-  make DESTDIR="${pkgdir}" -C contrib install
+package_pacman() {
+  groups=(base)
+  depends=(bash gnupg)
+  backup=(etc/makepkg.conf
+          etc/pacman.conf)
 
-  install -dm755 "${pkgdir}/etc"
-  install -Dm644 "${srcdir}/makepkg.conf" "${pkgdir}/etc/makepkg.conf"
-  install -Dm644 "${srcdir}/pacman.conf.${CARCH}" "${pkgdir}/etc/pacman.conf"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  # set things correctly in the default conf file
-  case "$CARCH" in
-    i686)
-      mycarch="i686"
-      mychost="i686-linux-musl"
-      myflags="-march=i686"
-      ;;
-    x86_64)
-      mycarch="x86_64"
-      mychost="x86_64-linux-musl"
-      myflags="-march=x86-64"
-      ;;
-  esac
-  sed -i.bak \
-    -e "s|@CARCH[@]|$mycarch|g" \
-    -e "s|@CHOST[@]|$mychost|g" \
-    -e "s|@CARCHFLAGS[@]|$myflags|g" \
-    "${pkgdir}/etc/makepkg.conf"
-  # busybox sed requires an argument to -i to not choke on -e
-  rm "${pkgdir}/etc/makepkg.conf.bak"
-    
-  # put bash_completion in the right location
-  install -dm755 "${pkgdir}/share/bash-completion/completions"
-  mv "${pkgdir}/etc/bash_completion.d/pacman" "${pkgdir}/share/bash-completion/completions"
-  rmdir "${pkgdir}/etc/bash_completion.d"
-  for f in makepkg pacman-key; do
-    ln -s pacman "${pkgdir}/share/bash-completion/completions/$f"
+  make DESTDIR=${pkgdir} install
+  make DESTDIR=${pkgdir} -C contrib install
+  rm -r ${pkgdir}/{include,lib}
+
+  install -dm755 ${pkgdir}/share/bash-completion/completions
+  mv ${pkgdir}/etc/bash_completion.d/pacman ${pkgdir}/share/bash-completion/completions
+  rmdir ${pkgdir}/etc/bash_completion.d
+  for f in makepkg pacman-key
+  do
+    ln -s pacman ${pkgdir}/share/bash-completion/completions/$f
   done
 
-  install -Dm644 contrib/PKGBUILD.vim "${pkgdir}/share/vim/vimfiles/syntax/PKGBUILD.vim"
+  install -Dm644 contrib/PKGBUILD.vim ${pkgdir}/share/vim/vimfiles/syntax/PKGBUILD.vim
+
+  sed -i 's/-pc-linux-musl/-linux-musl/g' ${pkgdir}/etc/makepkg.conf
+}
+
+package_libalpm() {
+  depends=(libarchive libcurl libgpgme libressl)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{etc,bin,share}
 }
