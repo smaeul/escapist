@@ -1,0 +1,49 @@
+--- dhcp-4.3.0/bind/Makefile
++++ dhcp-fixed/bind/Makefile
+@@ -52,7 +52,7 @@
+ 	else                                                       \
+ 		echo Configuring BIND Export libraries for DHCP. ; \
+ 		rm -rf ./lib ./include ./configure.log ./build.log ./install.log ; \
+-		(cd ${bindsrcdir} && ./configure --disable-kqueue --disable-epoll --disable-devpoll --without-openssl --without-libxml2 --enable-exportlib --enable-threads=no --with-export-includedir=${binddir}/include --with-export-libdir=${binddir}/lib --with-gssapi=no > ${binddir}/configure.log); \
++		(cd ${bindsrcdir} && ./configure --disable-symtable --disable-kqueue --disable-epoll --disable-devpoll --without-openssl --without-libxml2 --enable-exportlib --enable-threads=no --with-export-includedir=${binddir}/include --with-export-libdir=${binddir}/lib --with-gssapi=no > ${binddir}/configure.log); \
+ 	fi
+ 
+ # Build and install the export libraries
+Only in dhcp-fixed/: bind/bindvar.tmp
+Only in dhcp-fixed/: bind/build.log
+Only in dhcp-fixed/: bind/configure.log
+Only in dhcp-fixed/: bind/install.log
+--- dhcp-4.3.0/common/lpf.c
++++ dhcp-fixed/common/lpf.c
+@@ -36,7 +36,7 @@
+ #include <linux/filter.h>
+ #include <linux/if_ether.h>
+ #include <netinet/in_systm.h>
+-#include <net/if_packet.h>
++#include <linux/if_packet.h>
+ #include "includes/netinet/ip.h"
+ #include "includes/netinet/udp.h"
+ #include "includes/netinet/if_ether.h"
+Only in dhcp-fixed/: config.report
+--- dhcp-4.3.0/includes/arpa/nameser.h
++++ dhcp-fixed/includes/arpa/nameser.h
+@@ -57,6 +57,8 @@
+ #ifndef _ARPA_NAMESER_H_
+ #define _ARPA_NAMESER_H_
+ 
++#include <sys/types.h>
++
+ /*
+  * Revision information.  This is the release date in YYYYMMDD format.
+  * It can change every day so the right thing to do with it is use it
+--- dhcp-4.3.0/includes/isc-dhcp/dst.h
++++ dhcp-fixed/includes/isc-dhcp/dst.h
+@@ -1,6 +1,8 @@
+ #ifndef DST_H
+ #define DST_H
+ 
++#include <sys/types.h>
++
+ #ifndef HAS_DST_KEY
+ typedef struct dst_key {
+ 	char	*dk_key_name;   /* name of the key */

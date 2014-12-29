@@ -1,0 +1,46 @@
+pkgbase=dhcp
+pkgname=dhclient
+pkgrel=1
+pkgver=4.3.1
+pkgdesc="ISC DHCP client"
+arch=(i686 x86_64)
+groups=(net)
+license=(custom)
+url="http://www.dhcp.org/"
+depends=(sh)
+options=(emptydirs)
+source=(ftp://ftp.isc.org/isc/${pkgbase}/${pkgver}/${pkgbase}-${pkgver}.tar.gz{,.asc}
+        ${pkgbase}-musl.patch
+        dhclient-script)
+sha256sums=('266cbca8a7a6bb8f9ccc5765da0d2b04099329314a54a4fc1022d510ad3e9af0'
+            'SKIP'
+            '029574717cb6264a4a5abf16fe29e9bc15c60a464257ffb43131a5a7e0c409f6'
+            '51c6eb6c443cc8acf74a2dcf262b1ce721e057d6e089a190a174309e948f777e')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  CFLAGS="$CFLAGS -D_PATH_DHCLIENT_SCRIPT='\"/bin/dhclient-script\"'" \
+  ./configure --build=$CHOST \
+    --prefix= --sbindir=/bin --sysconfdir=/etc \
+    --with-cli-lease-file=/var/lib/dhclient/leases \
+    --with-cli6-lease-file=/var/lib/dhclient/leases6
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} -C client install
+  install -dm755 ${pkgdir}/var/lib/dhclient
+  # NOTE: The shipped script only works with ifconfig/route
+  #install -Dm755 client/scripts/linux ${pkgdir}/bin/dhclient-script
+  install -Dm755 ${srcdir}/dhclient-script ${pkgdir}/bin/dhclient-script
+  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
+}
