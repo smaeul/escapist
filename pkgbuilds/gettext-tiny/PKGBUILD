@@ -1,0 +1,24 @@
+pkgbase=gettext-tiny
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=0.0.4
+pkgdesc="gettext-replacement library; includes msgfmt"
+arch=(i686 x86_64)
+license=(MIT)
+url="http://github.com/sabotage-linux/gettext-tiny/"
+provides=(gettext)
+source=(http://ftp.barfooze.de/pub/sabotage/tarballs/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('fffb22ae01bc8f4772ba6fcfddce4a87f199589e0230cba26df65110007c7821')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} prefix= install
+  rm -r ${pkgdir}/include
+}
