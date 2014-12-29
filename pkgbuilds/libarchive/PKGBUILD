@@ -1,62 +1,65 @@
-pkgname=('libarchive-bin' 'libarchive')
 pkgbase=libarchive
-pkgver=3.1.2
+pkgname=(libarchive-bin libarchive)
 pkgrel=1
-pkgdesc="Versatile Archive library and tools"
-arch=('i686' 'x86_64')
-url="http://libarchive.org/"
-license=('BSD')
-makedepends=('libbz2' 'liblzma' 'libz')
-source=("http://libarchive.org/downloads/${pkgbase}-${pkgver}.tar.gz"
-        '0001-mtree-fix-line-filename-length-calculation.patch'
-        '0001-Limit-write-requests-to-at-most-INT_MAX.patch'
-        'libarchive-3.1.2-acl.patch')
+pkgver=3.1.2
+pkgdesc="Utility for reading and writing various archives"
+arch=(i686 x86_64)
+license=(BSD)
+url="http://www.libarchive.org/"
+makedepends=(libacl libattr libbz2 libexpat liblzma libressl libz)
+source=(http://www.libarchive.org/downloads/${pkgbase}-${pkgver}.tar.gz
+        0001-Limit-write-requests-to-at-most-INT_MAX.patch
+        0001-mtree-fix-line-filename-length-calculation.patch
+        libarchive-3.1.2-acl.patch
+        libarchive-3.1.2-sparse-mtree.patch)
+sha256sums=('eb87eacd8fe49e8d90c8fdc189813023ccc319c5e752b01fb6ad0cc7b2c53d5e'
+            '8b92f3d51055497102b9924b8c66bd07a5a436a66a9c9c4b88c81fde5fc3a815'
+            'd6f82f33bb35680d391476225fcdbb1bf67b4ffb1e8c8094d89fbf907ebd1e63'
+            '41f94b16da2acb8af4c441b221736f0f7fec4ac5ba6ed29e3ccfb8b30e2322e6'
+            '0964edfa27c189b667e3a3424ab7e6a03460e9735210f6e4f07fcecef596e7d6')
 
 prepare() {
-  cd "${srcdir}//${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  # https://code.google.com/p/libarchive/issues/detail?id=301
-  # upstream commit e65bf287f0133426b26611fe3e80b51267987106
-  patch -p1 -i "${srcdir}/0001-mtree-fix-line-filename-length-calculation.patch"
+  patch -p1 -i ${srcdir}/0001-Limit-write-requests-to-at-most-INT_MAX.patch
+  patch -p1 -i ${srcdir}/0001-mtree-fix-line-filename-length-calculation.patch
+  patch -p1 -i ${srcdir}/libarchive-3.1.2-acl.patch
+  # XXX: Chokes busybox patch
+  patch -p1 -i ${srcdir}/libarchive-3.1.2-sparse-mtree.patch || true
 
-  # https://code.google.com/p/libarchive/issues/detail?id=329
-  patch -p1 -i "${srcdir}/libarchive-3.1.2-acl.patch"
-
-  # CVE-2013-0211
-  patch -p1 -i "${srcdir}/0001-Limit-write-requests-to-at-most-INT_MAX.patch"
-
-  # Ignore the presense of lchmod in musl, as it is unnecessary and broken
-  sed -i.bak -e 's/lchmod //' configure
+  # Suppress spurious warnings
+  sed -i.bak -e "s/lchmod //" configure
 }
 
 build() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= \
-    --disable-shared --without-xml2
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
   make
 }
 
 check() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
   make check
 }
-  
-package_libarchive-bin() {
-  cd "${srcdir}/${pkgbase}-${pkgver}"
 
-  make DESTDIR="${pkgdir}" install-binPROGRAMS install-man1
-  rm -r "${pkgdir}/lib"
-  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+package_libarchive-bin() {
+  groups=(devel)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{lib,include,share/man/man{3,5}}
 }
 
 package_libarchive() {
-  depends=('libbz2' 'liblzma' 'libz')
+  depends=(libacl libattr libbz2 libexpat liblzma libressl libz)
 
-  cd "${srcdir}/${pkgbase}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install-libLTLIBRARIES install-man3 install-man5 \
-    install-pkgconfigDATA install-includeHEADERS
-  install -Dm644 COPYING "${pkgdir}/share/licenses/${pkgname}/LICENSE"
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{bin,share/man/man1}
 }
