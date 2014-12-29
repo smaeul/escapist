@@ -1,0 +1,30 @@
+pkgbase=git
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2.2.1
+pkgdesc="A distributed version control system (DVCS)"
+arch=(i686 x86_64)
+license=(GPL2)
+url="http://www.git-scm.org/"
+checkdepends=(perl)
+makedepends=(gettext libcurl libexpat libressl libz)
+source=(https://www.kernel.org/pub/software/scm/${pkgbase}/${pkgbase}-${pkgver}.tar.xz)
+sha256sums=('09422dc9a0bdddf6bdd5b8634c71e1ed3125256c47424e6a2687701e764ef450')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make prefix= gitexecdir=lib/git NO_PERL=y NO_TCLTK=y NEEDS_SSL_WITH_CURL=y NEEDS_CRYPTO_WITH_SSL=y
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make prefix= gitexecdir=lib/git NO_PERL=y NO_TCLTK=y NEEDS_SSL_WITH_CURL=y NEEDS_CRYPTO_WITH_SSL=y test
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make prefix= gitexecdir=lib/git NO_PERL=y NO_TCLTK=y NEEDS_SSL_WITH_CURL=y NEEDS_CRYPTO_WITH_SSL=y DESTDIR=${pkgdir} install
+}
