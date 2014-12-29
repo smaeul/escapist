@@ -1,33 +1,38 @@
-pkgname=bc
-pkgver=1.06.95
+pkgbase=bc
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Arbitrary precision calculator"
-arch=('i686' 'x86_64')
-url="http://gnu.org/software/bc/"
-license=('GPL')
-makedepends=('libreadline')
-source=(http://alpha.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.bz2{,.sig}
-        bc-1.06.95-void_uninitialized.patch)
+pkgver=1.06.95
+pkgdesc="Arbitrary-precision calculator"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.gnu.org/software/bc/"
+depends=(ncurses readline)
+makedepends=(libncursesw libreadline)
+source=(http://alpha.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+        ${pkgbase}-${pkgver}-void_uninitialized.patch)
+sha256sums=('7ee4abbcfac03d8a6e1a8a3440558a3d239d6b858585063e745c760957725ecc'
+            'SKIP'
+            '5297ad3e259402911884e306b7fb811fe22a72367a96abbea62340f40613b0b9')
 
 prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  patch -p0 -i "${srcdir}/bc-1.06.95-void_uninitialized.patch"
+  patch -p0 -i ${srcdir}/${pkgbase}-${pkgver}-void_uninitialized.patch
 
-  sed -i.bak -e 's/makeinfo --no-split/true/' doc/Makefile.in
+  sed -i -e 's/makeinfo --no-split/true/' doc/Makefile.in
 }
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= \
-    --mandir=/share/man --infodir=/share/info \
-    --disable-shared --disable-nls --with-readline
+  ./configure --build=$CHOST \
+    --prefix= --infodir=/share/info --mandir=/share/man \
+    --with-readline
   make
 }
 
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
+  make DESTDIR=${pkgdir} install
 }
