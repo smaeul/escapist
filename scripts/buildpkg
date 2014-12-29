@@ -1,0 +1,277 @@
+#!/bin/bash
+
+set -e
+
+shopt -s extglob
+
+# generated from util-linux source: libmount/src/utils.c
+declare -A pseudofs_types=([anon_inodefs]=1
+                           [autofs]=1
+                           [bdev]=1
+                           [binfmt_misc]=1
+                           [cgroup]=1
+                           [configfs]=1
+                           [cpuset]=1
+                           [debugfs]=1
+                           [devfs]=1
+                           [devpts]=1
+                           [devtmpfs]=1
+                           [dlmfs]=1
+                           [fuse.gvfs-fuse-daemon]=1
+                           [fusectl]=1
+                           [hugetlbfs]=1
+                           [mqueue]=1
+                           [nfsd]=1
+                           [none]=1
+                           [pipefs]=1
+                           [proc]=1
+                           [pstore]=1
+                           [ramfs]=1
+                           [rootfs]=1
+                           [rpc_pipefs]=1
+                           [securityfs]=1
+                           [sockfs]=1
+                           [spufs]=1
+                           [sysfs]=1
+                           [tmpfs]=1)
+
+# generated from: pkgfile -vbr '/fsck\..+' | awk -F. '{ print $NF }' | sort
+declare -A fsck_types=([cramfs]=1
+                       [exfat]=1
+                       [ext2]=1
+                       [ext3]=1
+                       [ext4]=1
+                       [ext4dev]=1
+                       [jfs]=1
+                       [minix]=1
+                       [msdos]=1
+                       [reiserfs]=1
+                       [vfat]=1
+                       [xfs]=1)
+
+out() { printf "$1 $2\n" "${@:3}"; }
+error() { out "==> ERROR:" "$@"; } >&2
+msg() { out "==>" "$@"; }
+msg2() { out "  ->" "$@";}
+die() { error "$@"; exit 1; }
+
+ignore_error() {
+  "$@" 2>/dev/null
+  return 0
+}
+
+in_array() {
+  local i
+  for i in "${@:2}"; do
+    [[ $1 = "$i" ]] && return
+  done
+}
+
+track_mount() {
+  if [[ -z $CHROOT_ACTIVE_MOUNTS ]]; then
+    CHROOT_ACTIVE_MOUNTS=()
+    trap 'chroot_umount' EXIT
+  fi
+
+  mount "$@" && CHROOT_ACTIVE_MOUNTS=("$6" "${CHROOT_ACTIVE_MOUNTS[@]}")
+}
+
+mount_conditionally() {
+  local cond=$1; shift
+  if eval "$cond"; then
+    track_mount "$@"
+  fi
+}
+
+api_fs_mount() {
+  mount_conditionally "! mountpoint -q '$1'" -t auto -o bind "$1" "$1" &&
+  track_mount -t proc -o nosuid,noexec,nodev proc "$1/proc" &&
+  track_mount -t sysfs -o nosuid,noexec,nodev,ro sys "$1/sys" &&
+  ignore_error mount_conditionally "[[ -d '$1/sys/firmware/efi/efivars' ]]" \
+      -t efivarfs -o nosuid,noexec,nodev efivarfs "$1/sys/firmware/efi/efivars" &&
+  track_mount -t devtmpfs -o mode=0755,nosuid udev "$1/dev" &&
+  track_mount -t devpts -o mode=0620,gid=5,nosuid,noexec devpts "$1/dev/pts" &&
+#  track_mount -t tmpfs -o mode=1777,nosuid,nodev shm "$1/dev/shm" &&
+  track_mount -t tmpfs -o nosuid,nodev,mode=0755 run "$1/run" &&
+  track_mount -t tmpfs -o mode=1777,strictatime,nodev,nosuid tmp "$1/tmp"
+}
+
+chroot_umount() {
+  umount "${CHROOT_ACTIVE_MOUNTS[@]}"
+}
+
+valid_number_of_base() {
+  local base=$1 len=${#2} i=
+
+  for (( i = 0; i < len; i++ )); do
+    { _=$(( $base#${2:i:1} )) || return 1; } 2>/dev/null
+  done
+
+  return 0
+}
+
+mangle() {
+  local i= chr= out=
+
+  unset {a..f} {A..F}
+
+  for (( i = 0; i < ${#1}; i++ )); do
+    chr=${1:i:1}
+    case $chr in
+      [[:space:]\\])
+        printf -v chr '%03o' "'$chr"
+        out+=\\
+        ;;
+    esac
+    out+=$chr
+  done
+
+  printf '%s' "$out"
+}
+
+unmangle() {
+  local i= chr= out= len=$(( ${#1} - 4 ))
+
+  unset {a..f} {A..F}
+
+  for (( i = 0; i < len; i++ )); do
+    chr=${1:i:1}
+    case $chr in
+      \\)
+        if valid_number_of_base 8 "${1:i+1:3}" ||
+            valid_number_of_base 16 "${1:i+1:3}"; then
+          printf -v chr '%b' "${1:i:4}"
+          (( i += 3 ))
+        fi
+        ;;
+    esac
+    out+=$chr
+  done
+
+  printf '%s' "$out${1:i}"
+}
+
+dm_name_for_devnode() {
+  read dm_name <"/sys/class/block/${1#/dev/}/dm/name"
+  if [[ $dm_name ]]; then
+    printf '/dev/mapper/%s' "$dm_name"
+  else
+    # don't leave the caller hanging, just print the original name
+    # along with the failure.
+    print '%s' "$1"
+    error 'Failed to resolve device mapper name for: %s' "$1"
+  fi
+}
+
+fstype_is_pseudofs() {
+  (( pseudofs_types["$1"] ))
+}
+
+fstype_has_fsck() {
+  (( fsck_types["$1"] ))
+}
+
+mpconfig=/etc/makepkg.conf
+pacconfig=/etc/pacman.conf
+pkgname=$(basename $PWD)
+rootdir=/tmp/pkgchroot/$pkgname
+
+hostcache=0
+interactive=0
+singlepkg=0
+
+usage() {
+  cat <<EOF
+usage: ${0##*/} [options] [makepkg options...]
+
+  Options:
+    -C config      Use an alternate config file for pacman
+    -c             Use the package cache on the host, rather than the target
+    -i             Avoid auto-confirmation of package selections
+    -P pkgname     Build only pkgname out of the PKGBUILD
+    -R rootdir     Build the chroot in rootdir, instead of /tmp/pkgchroot
+
+    -h             Print this help message
+
+pkgchroot builds packages in a clean chroot. Run it from the directory
+containing the PKGBUILD you want to use.
+
+EOF
+}
+
+if [[ $1 = @(-h|--help) ]]; then
+  usage
+  exit 0
+fi
+
+(( EUID == 0 )) || die 'This script must be run with root privileges'
+
+while getopts ':CPR:ci' flag; do
+  case $flag in
+    C)
+      pacconfig=$OPTARG
+      ;;
+    P)
+      pkgname=$OPTARG
+      singlepkg=1
+      ;;
+    R)
+      rootdir=$OPTARG
+      ;;
+    c)
+      hostcache=1
+      ;;
+    i)
+      interactive=1
+      ;;
+    :)
+      die '%s: option requires an argument -- '\''%s'\' "${0##*/}" "$OPTARG"
+      ;;
+    ?)
+      die '%s: invalid option -- '\''%s'\' "${0##*/}" "$OPTARG"
+      ;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+[[ -d $rootdir ]] && rm -rf "$rootdir"
+mkdir -p $rootdir || die "%s is not a usable directory" "$rootdir"
+
+if (( hostcache )); then
+  track_mount -t auto -o bind /var/cache/pacman/pkg "$rootdir/var/cache/pacman/pkg"
+fi
+
+if (( ! interactive )); then
+  pacman_args+=(--noconfirm)
+  makepkg_args+=(--noconfirm)
+fi
+
+# create obligatory directories
+msg 'Creating install root at %s' "$rootdir"
+mkdir -m 0755 -p "$rootdir"/var/{cache/pacman/pkg,lib/pacman,log} "$rootdir"/{dev,run,etc}
+mkdir -m 1777 -p "$rootdir"/tmp
+mkdir -m 0555 -p "$rootdir"/{sys,proc}
+
+# create directories for makepkg
+srcdir=$(source $mpconfig && echo $SRCDEST)
+pkgdir=$(source $mpconfig && echo $PKGDEST)
+mkdir -p "$rootdir$srcdir" "$rootdir$pkgdir"
+
+# mount API filesystems
+api_fs_mount "$rootdir" || die "failed to setup API filesystems in %s" "$rootdir"
+track_mount -t auto -o bind "$srcdir" "$rootdir$srcdir"
+track_mount -t auto -o bind "$pkgdir" "$rootdir$pkgdir"
+
+msg 'Installing base devel packages to %s' "$rootdir"
+pacman -r "$rootdir" -Sy --config="$pacconfig" "${pacman_args[@]}" base devel busybox || \
+  die 'Failed to install packages to new root'
+
+# copy over config
+cp "$pacconfig" "$rootdir/etc/pacman.conf"
+cp "$mpconfig" "$rootdir/etc/makepkg.conf"
+cp /etc/resolv.conf "$rootdir/etc/resolv.conf"
+
+# copy pkgbuild etc
+cp -r . "$rootdir/$pkgname"
+
+SHELL=/bin/sh chroot "$rootdir" sh -c "cd /$pkgname && makepkg --asroot --skippgpcheck -s $@"
