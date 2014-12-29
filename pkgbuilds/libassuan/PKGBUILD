@@ -1,0 +1,32 @@
+pkgbase=libassuan
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2.2.0
+pkgdesc="The GnuPG IPC library"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.gnupg.org/related_software/libassuan"
+depends=(libgpg-error)
+source=(ftp://ftp.gnupg.org/gcrypt/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('7df58ed70be4b694f77efd1f3b3f103c6311b6b71e04a370382f9fe8204f6ec6')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
