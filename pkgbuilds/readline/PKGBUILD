@@ -1,0 +1,38 @@
+pkgbase=readline
+pkgname=(${pkgbase} lib${pkgbase})
+pkgrel=1
+pkgver=6.3
+pkgdesc="GNU readline library"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://tiswww.case.edu/php/chet/redline/rltop.html"
+makedepends=(libncursesw)
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig}
+        inputrc)
+sha256sums=('56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43'
+            'SKIP'
+            '2f08b9093a6c1b704a5dbf6c4a072b55fd4ce235d7f1e280be5ab3b928f29363')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+package_readline() {
+  depends=(ncurses)
+  backup=(etc/inputrc)
+
+  install -Dm644 ${srcdir}/inputrc ${pkgdir}/etc/inputrc
+}
+
+package_libreadline() {
+  depends=(libncursesw)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
