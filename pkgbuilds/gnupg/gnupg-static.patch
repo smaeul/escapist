@@ -1,0 +1,87 @@
+--- gnupg-2.1.0-beta751/common/t-support.c
++++ gnupg-fixed/common/t-support.c
+@@ -48,84 +48,6 @@
+   exit (2);
+ }
+ 
+-
+-void *
+-gcry_malloc (size_t n)
+-{
+-  return malloc (n);
+-}
+-
+-void *
+-gcry_xmalloc (size_t n)
+-{
+-  void *p = malloc (n);
+-  if (!p)
+-    out_of_memory ();
+-  return p;
+-}
+-
+-char *
+-gcry_strdup (const char *string)
+-{
+-  char *p = malloc (strlen (string)+1);
+-  if (p)
+-    strcpy (p, string);
+-  return p;
+-}
+-
+-
+-void *
+-gcry_realloc (void *a, size_t n)
+-{
+-  return realloc (a, n);
+-}
+-
+-void *
+-gcry_xrealloc (void *a, size_t n)
+-{
+-  void *p = realloc (a, n);
+-  if (!p)
+-    out_of_memory ();
+-  return p;
+-}
+-
+-
+-
+-void *
+-gcry_calloc (size_t n, size_t m)
+-{
+-  return calloc (n, m);
+-}
+-
+-void *
+-gcry_xcalloc (size_t n, size_t m)
+-{
+-  void *p = calloc (n, m);
+-  if (!p)
+-    out_of_memory ();
+-  return p;
+-}
+-
+-
+-char *
+-gcry_xstrdup (const char *string)
+-{
+-  void *p = malloc (strlen (string)+1);
+-  if (!p)
+-    out_of_memory ();
+-  strcpy (p, string);
+-  return p;
+-}
+-
+-void
+-gcry_free (void *a)
+-{
+-  if (a)
+-    free (a);
+-}
+-
+-
+-
+ /* Stubs for gpg-error functions required because some compilers do
+    not eliminate the supposed-to-be-unused-inline-functions and thus
+    require functions called from these inline fucntions.  Although we

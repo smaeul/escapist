@@ -1,0 +1,52 @@
+pkgbase=gnupg
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2.1.1
+pkgdesc="The GNU Privacy Guard - PGP implementation"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.gnupg.org/"
+depends=(readline)
+makedepends=(libassuan libbz2 libgcrypt libgpg-error libksba libldap libnpth libreadline libz)
+source=(ftp://ftp.gnupg.org/gcrypt/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2
+        ${pkgbase}-musl.patch
+        ${pkgbase}-static.patch)
+sha256sums=('70ecd01d2875db62624c911c2fd815742f50aef5492698eb3bfc09a08690ce49'
+            '89c01d11c6a35542f8c89b1f15e142cfd7b1b56437eedee98a15b53c7aa38994'
+            '234e28050c4be2dfadab35b30340249d5ff5b7266fb842cb4e40c80625ea8e9d')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver/_/-}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+  patch -p1 -i ${srcdir}/${pkgbase}-static.patch
+
+  sed -i.bak 's/-llber/-llber -lssl -lcrypto/g' configure
+  sed -i.bak 's/$(am__objects_18)//g' common/Makefile.in
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver/_/-}
+
+  ./configure --build=$CHOST \
+    --prefix= --libexecdir=/lib/gnupg --localstatedir=/var \
+    --sbindir=/bin --sysconfdir=/etc \
+    --enable-gpgtar
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver/_/-}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver/_/-}
+
+  make DESTDIR=${pkgdir} install
+
+  ln -s gpg2 ${pkgdir}/bin/gpg
+  ln -s gpgv2 ${pkgdir}/bin/gpgv
+  ln -s gpg2.1.gz ${pkgdir}/share/man/man1/gpg.1.gz
+}
