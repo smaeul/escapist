@@ -1,0 +1,26 @@
+pkgbase=linux-firmware
+pkgname=${pkgbase}-git
+pkgrel=1
+pkgver=20141225.78535e8
+pkgdesc="Linux out-of-tree firmware"
+arch=(any)
+license=(GPL2 GPL3 custom)
+url="http://git.kernel.org/?p=linux/kernel/git/firmware/linux-firmware.git"
+makedepends=(git)
+options=(!strip)
+provides=(linux-firmware)
+source=(git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git)
+sha256sums=('SKIP')
+
+pkgver() {
+  cd ${srcdir}/${pkgbase}
+
+  printf "%s.%s\n" $(git log -1 --format=%ci | cut -d' ' -f1 | tr -d -- -) $(git rev-parse --short origin/master)
+}
+package() {
+  cd ${srcdir}/${pkgbase}
+
+  make DESTDIR=${pkgdir} install
+  rm ${pkgdir}/lib/firmware/{README*,configure,GPL*,Makefile}
+  install -Dm644 WHENCE ${pkgdir}/share/licenses/custom/${pkgname}
+}
