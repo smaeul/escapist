@@ -1,34 +1,34 @@
-pkgname=nano
-pkgver=2.2.6
+pkgbase=nano
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="GNU Pico text editor clone with enhancements"
-arch=('i686' 'x86_64')
-url="http://nano-editor.org/"
-license=('GPL')
-depends=('ncurses')
-makedepends=('libncursesw')
-groups=('base')
-backup=('etc/nanorc')
-source=(http://nano-editor.org/dist/v2.2/${pkgname}-${pkgver}.tar.gz
-        ${pkgname}-musl.patch)
-
-prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-
-  patch -p1 -i "${srcdir}/${pkgname}-musl.patch"
-}
+pkgver=2.3.6
+pkgdesc="GNU text editor (enhanced pico clone)"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://www.nano-editor.org/"
+depends=(ncurses)
+makedepends=(libncursesw)
+source=(http://www.nano-editor.org/dist/v2.3/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('a74bf3f18b12c1c777ae737c0e463152439e381aba8720b4bc67449f36a09534')
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  ./configure --build=$CHOST --prefix= --sysconfdir=/etc \
-    --disable-nls --disable-wrapping-as-root
+  ./configure --build=$CHOST \
+    --prefix= --sysconfdir=/etc \
+    --disable-wrapping-as-root
   make
 }
 
-package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
-  install -Dm644 doc/nanorc.sample "${pkgdir}/etc/nanorc"
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  install -Dm644 doc/nanorc.sample ${pkgdir}/etc/nanorc
 }
