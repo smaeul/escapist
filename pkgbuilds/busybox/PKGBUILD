@@ -1,28 +1,35 @@
-pkgname=busybox
-pkgver=1.22.1
+pkgbase=busybox
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="Utilities for rescue and embedded systems"
-arch=('i686' 'x86_64')
+pkgver=1.23.0
+pkgdesc="A Collection of Utilities for Small Systems"
+arch=(i686 x86_64)
+license=(GPL)
 url="http://busybox.net/"
-license=('GPL')
-groups=('base')
-source=(http://busybox.net/downloads/${pkgname}-${pkgver}.tar.bz2
+groups=(base)
+source=(http://busybox.net/downloads/${pkgbase}-${pkgver}.tar.bz2
 	config)
-install=busybox.install
+sha256sums=('483ab594dd962ddbb332fd24e36ffdd6e36ac2182fbff055c56e1ca49fda09e4'
+            '30ef98e32f469ed5b00b647b3b2f411c3a5551cb9e36ce53cf017aeb95df2eb7')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  cp ${srcdir}/config .config
+}
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  cp $srcdir/config .config
   make
 }
 
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
   install -Dm6755 busybox "${pkgdir}/bin/busybox"
   ./busybox --list | while read applet
   do
-    ln -s busybox "${pkgdir}/bin/${applet}"
+    ln -s /bin/busybox "${pkgdir}/bin/${applet}"
   done
 }
