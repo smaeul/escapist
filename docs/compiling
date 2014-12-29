@@ -1,0 +1,1 @@
+All packages must be compiled in a clean chroot. For this purpose the `buildpkg` command is provided, which extends `makepkg`.

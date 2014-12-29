@@ -1,0 +1,26 @@
+Packages
+========
+
+Naming
+~~~~~~
+* Any package that includes libraries but not binaries must be named lib<project> or lib<soname>
+* Shared libraries must always be separated into a package named lib<project>-shared
+
+Repositories
+~~~~~~~~~~~~
+Core:
+Xorg:
+Extra:
+
+Groups
+~~~~~~
+Skel: The minimum set of packages required to qualify as an Escapist Linux installation. Any system without all of base installed cannot be supported. This includes
+everything needed to boot to a (usable) shell, mount filesystems, and install packages.
+Devel: The set of tools required to compile a basic C/C++ project
+Net: A selection of tools that will get most people's network running and allow for basic diagnostics
+Base: The recommended minimum level of installation.
+
+Implementations
+~~~~~~~~~~~~~~~
+Standard utilities with multiple implementations will be named in the format <provider>-<tool> (gnu-grep, toybox-sed, openbsd-netcat), and will provide <tool>.
+Unless applications require specific features, they should depend on <tool> only, especially for standardized utilities.

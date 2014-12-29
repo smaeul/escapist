@@ -1,0 +1,12 @@
+Longer term goal: four-tiered filesystem
+* Unmodifiable base (also in initramfs along with config)
+  * This is transactionally updated by generating a new initramfs
+* Package-manager controlled layer (like today's /usr)
+* Sysadmin-modification layer (like other distros' /usr/local)
+* User-controlled layer (like ~/.config and ~/.local)
+
+Sysadmin is not root (can be, but discouraged)
+* User rights managed by policies
+* Daemon rights managed by capabilities
+* No SUID or CAP_*_ADMIN utilities - talk to management daemons
+* No dbus either, use something more like OpenWRT
