@@ -1,0 +1,40 @@
+pkgbase=expat
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=2.1.0
+pkgdesc="An XML parser library"
+arch=(i686 x86_64)
+license=(custom)
+url="http://www.expat.org/"
+source=(http://downloads.sourceforge.net/${pkgbase}/${pkgbase}-${pkgver}.tar.gz
+        ${pkgbase}-musl.patch)
+sha256sums=('823705472f816df21c8f6aa026dd162b280806838bb55b3432b0fb1fcca7eb86'
+            '9a2454cc8c07e5f642e9afd8634985186976e0d5bf8cbba6734caabc0806031e')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  install -Dm644 COPYING ${pkgdir}/share/licenses/custom/${pkgname}
+}
