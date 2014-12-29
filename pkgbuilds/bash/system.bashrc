@@ -1,5 +1,5 @@
 #
-# /etc/bash.bashrc
+# /etc/bashrc
 #
 
 # If not running interactively, don't do anything
@@ -20,4 +20,4 @@ case ${TERM} in
     ;;
 esac
 
-[ -r /usr/share/bash-completion/bash_completion   ] && . /usr/share/bash-completion/bash_completion
+[ -r /share/bash-completion/bash_completion   ] && . /share/bash-completion/bash_completion

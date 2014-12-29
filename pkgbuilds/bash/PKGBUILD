@@ -1,62 +1,57 @@
-pkgname=bash
-pkgver=4.3
+pkgbase=bash
+pkgname=${pkgbase}
 pkgrel=1
-pkgdesc="GNU Bourne Again Shell"
-arch=('i686' 'x86_64')
-url="http://www.gnu.org/software/bash/bash.html"
-license=('GPL')
-groups=('base')
-depends=('ncurses')
-makedepends=('libreadline')
-provides=('sh')
-backup=(etc/bash{rc,_logout} etc/skel/.bash{rc,_profile,_logout})
-source=(http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
-        dot.bashrc
-        dot.bash_profile
-        dot.bash_logout
-        system.bashrc
-        system.bash_logout
-        bash-4.3-debug-trap.patch
-        bash-4.3-test-nameref.patch)
-
-prepare() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-
-  # upstream patches I assume will be made official later...
-  patch -p0 -i $srcdir/bash-4.3-debug-trap.patch
-  patch -p0 -i $srcdir/bash-4.3-test-nameref.patch
-}
+pkgver=4.3.30
+pkgdesc="The Bourne-again shell"
+arch=(i686 x86_64)
+groups=(base)
+license=(GPL)
+url="http://www.bash.org/"
+depends=(ncurses readline)
+makedepends=(bison libncursesw libreadline)
+provides=(sh)
+backup=(etc/bash{_logout,rc}
+        etc/skel/.bash{_logout,_profile,rc})
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.gz{,.sig}
+        system.bash{_logout,rc}
+        user.bash{_logout,_profile,rc})
+sha256sums=('317881019bbf2262fb814b7dd8e40632d13c3608d2f237800a8828fbb8a640dd'
+            'SKIP'
+            '24bceefc3d60d270bc4e4bc1fb10d83b16989c49d069579bbbe28ccb1440e290'
+            '6b613c3dcf4c7e18be9bce1f5f893c49a40285423e81d6501b5cb938a69a5593'
+            '4330edf340394d0dae50afb04ac2a621f106fe67fb634ec81c4bfb98be2a1eb5'
+            'e149407c2bee17779caec70a7edd3d0000d172e7e4347429b80cb4d55bcec9c2'
+            '3e22bf86ae6708df7a6bceb88c67a00118275f9c0b5268f453dd388af7c43b53')
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  export CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin:/local/bin:/usr/bin\"'
-    -DSTANDARD_UTILS_PATH='\"/bin\"'
-    -DSYS_BASHRC='\"/etc/bashrc\"'
-    -DSYS_BASH_LOGOUT='\"/etc/bash_logout\"'"
-
-  ./configure --build=$CHOST --prefix= \
-    --disable-nls --enable-readline --with-curses \
-    --without-bash-malloc --with-installed-readline
+  CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin\"'
+    -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash_logout\"'
+    -DSYS_BASHRC='\"/etc/bashrc\"'" \
+  ./configure --build=$CHOST \
+    --prefix= \
+    --with-curses --with-installed-readline --without-bash-malloc \
+    --enable-readline
   make
 }
 
 check() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
   make check
 }
-  
+
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd ${srcdir}/${pkgbase}-${pkgver}
 
-  make DESTDIR="${pkgdir}" install
+  make DESTDIR=${pkgdir} install
 
-  ln -s bash "${pkgdir}/bin/sh"
+  ln -s /bin/bash ${pkgdir}/bin/sh
 
-  install -Dm644 "${srcdir}/dot.bashrc" "${pkgdir}/etc/skel/.bashrc"
-  install -Dm644 "${srcdir}/dot.bash_profile" "${pkgdir}/etc/skel/.bash_profile"
-  install -Dm644 "${srcdir}/dot.bash_logout" "${pkgdir}/etc/skel/.bash_logout"
-  install -Dm644 "${srcdir}/system.bashrc" "${pkgdir}/etc/bashrc"
-  install -Dm644 "${srcdir}/system.bash_logout" "${pkgdir}/etc/bash_logout"
+  install -Dm644 ${srcdir}/system.bash_logout ${pkgdir}/etc/bash_logout
+  install -Dm644 ${srcdir}/system.bashrc ${pkgdir}/etc/bashrc
+  install -Dm644 ${srcdir}/user.bash_profile ${pkgdir}/etc/skel/.bash_profile
+  install -Dm644 ${srcdir}/user.bash_logout ${pkgdir}/etc/skel/.bash_logout
+  install -Dm644 ${srcdir}/user.bashrc ${pkgdir}/etc/skel/.bashrc
 }
