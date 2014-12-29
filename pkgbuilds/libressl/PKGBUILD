@@ -1,0 +1,44 @@
+pkgbase=libressl
+pkgname=(${pkgbase} openssl)
+pkgrel=1
+pkgver=2.1.2
+pkgdesc="Drop-in OpenSSL-replacement crypto library"
+arch=(i686 x86_64)
+license=(BSD)
+url="https://www.libressl.org/"
+source=(http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/${pkgbase}-${pkgver}.tar.gz
+        openssl.cnf)
+sha256sums=('07c05f12e5d49dbfcf82dd23b6b4877b7cdb1c8e4c8dd27cb4d9e5758a6caf52'
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package_openssl() {
+  groups=(devel)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{include,lib,share/man/man3}
+  install -Dm644 ${srcdir}/openssl.cnf ${pkgdir}/etc/ssl/openssl.cnf
+}
+
+package_libressl() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  rm -r ${pkgdir}/{bin,share/man/man1}
+}
