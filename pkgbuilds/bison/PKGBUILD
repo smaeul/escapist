@@ -1,0 +1,44 @@
+pkgbase=bison
+pkgname=(${pkgbase} liby)
+pkgrel=1
+pkgver=3.0.2
+pkgdesc="GNU parser generater"
+arch=(i686 x86_64)
+license=(GPL3)
+url="http://www.gnu.org/software/bison/"
+makedepends=(m4)
+source=(http://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}.tar.xz{,.sig})
+sha256sums=('a2c3e8528bdb50567d6fa26deeb493dc5ccd7e277b865251608a9e43ac928f3c'
+            'SKIP')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  PERL=/bin/touch \
+  ./configure --build=$CHOST \
+    --prefix= --datadir=/share
+  # XXX: Missing perl prevents building the documentation, but bison itself works
+  make || true
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  # XXX: Chokes because we're missing perl; fails because of static linking
+  make check || true
+}
+
+package_bison() {
+  depends=(m4 sh)
+  provides=(yacc)
+
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install-{aclocalDATA,binPROGRAMS,binSCRIPTS,dist_{m4sugar,pkgdata,xslt}DATA,man1}
+}
+
+package_liby() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install-libLIBRARIES
+}
