@@ -1,0 +1,37 @@
+pkgbase=vis
+pkgname=${pkgbase}-git
+pkgrel=1
+pkgver=0.r290
+pkgdesc="Suckless visual text editor"
+arch=(i686 x86_64)
+groups=(base)
+license=(custom)
+url="http://repo.or.cz/vis.git"
+depends=(ncurses)
+makedepends=(git libncursesw)
+source=(git://repo.or.cz/vis.git)
+sha256sums=('SKIP')
+
+pkgver() {
+  cd ${srcdir}/${pkgbase}
+
+  if GITTAG="$(git describe --abbrev=0 --tags 2>/dev/null)"; then
+    echo "$(sed -e "s/^${pkgname%%-git}//" -e 's/^[-_/a-zA-Z]\+//' -e 's/[-_+]/./g' <<< ${GITTAG}).r$(git rev-list --count ${GITTAG}..).g$(git log -1 --format="%h")"
+  else
+    echo "0.r$(git rev-list --count master).g$(git log -1 --format="%h")"
+  fi
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}
+
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}
+
+  make DESTDIR=${pkgdir} PREFIX= install
+  install -Dm644 README ${pkgdir}/share/doc/vis/README
+  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
+}
