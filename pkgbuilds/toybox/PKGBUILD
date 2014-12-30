@@ -1,0 +1,34 @@
+pkgbase=toybox
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=0.5.1
+pkgdesc="A collection of POSIX and Linux utilities"
+arch=(i686 x86_64)
+license=(none)
+url="http://landley.net/code/toybox"
+source=(http://landley.net/code/${pkgbase}/downloads/${pkgbase}-${pkgver}.tar.bz2)
+sha256sums=('83baa69a26e03a920ea7e91fbeb9016178990450d4144d1a244275b44346a12c')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make defconfig
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make test
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  install -Dm755 toybox ${pkgdir}/usr/bin/toybox
+}
