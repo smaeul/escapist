@@ -1,0 +1,32 @@
+pkgbase=libffi
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=3.2.1
+pkgdesc="Foreign function interface library"
+arch=(i686 x86_64)
+license=(MIT)
+url="http://www.sourceware.org/libffi/"
+checkdepends=(dejagnu)
+source=(ftp://www.sourceware.org/pub/${pkgbase}/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('d06ebb8e1d9a22d19e38d63fdb83954253f39bedc5d46232a05645685722ca37')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
