@@ -1,7 +1,7 @@
 pkgbase=musl
 pkgname=libc
 pkgrel=1
-pkgver=1.1.5
+pkgver=1.1.6
 pkgdesc="C standard library"
 arch=(i686 x86_64)
 groups=(devel)
@@ -9,7 +9,7 @@ license=(MIT)
 url="http://www.musl-libc.org/"
 options=('!buildflags')
 source=(http://www.musl-libc.org/releases/${pkgbase}-${pkgver}.tar.gz)
-sha256sums=('352362b1724cc9740f4c3ce0fe02aae45e4de9809ea4ac961f31aedc11b87393')
+sha256sums=('5a0160c55c540d5b90158617a57647f1b03209f58d9ee70dbce19d1115b4f1b4')
 
 build() {
   cd ${srcdir}/${pkgbase}-${pkgver}
