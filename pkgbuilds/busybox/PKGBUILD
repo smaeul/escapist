@@ -1,7 +1,7 @@
 pkgbase=busybox
 pkgname=${pkgbase}
 pkgrel=1
-pkgver=1.23.0
+pkgver=1.23.1
 pkgdesc="A Collection of Utilities for Small Systems"
 arch=(i686 x86_64)
 license=(GPL)
@@ -9,8 +9,8 @@ url="http://busybox.net/"
 groups=(base)
 source=(http://busybox.net/downloads/${pkgbase}-${pkgver}.tar.bz2
 	config)
-sha256sums=('483ab594dd962ddbb332fd24e36ffdd6e36ac2182fbff055c56e1ca49fda09e4'
-            '30ef98e32f469ed5b00b647b3b2f411c3a5551cb9e36ce53cf017aeb95df2eb7')
+sha256sums=('300f1db0a7ca4ecee8f8d8027aba250b903372e8339b7d9123d37c1e900473bf'
+            '63bfd9c19d84a412947edec1782d65698dd20de16b444406961892f53418eab2')
 
 prepare() {
   cd ${srcdir}/${pkgbase}-${pkgver}
