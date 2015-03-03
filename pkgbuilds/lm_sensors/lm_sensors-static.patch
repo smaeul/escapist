@@ -1,0 +1,36 @@
+--- lm_sensors-3.3.5/lib/Module.mk
++++ lm_sensors-fixed/lib/Module.mk
+@@ -43,11 +43,7 @@
+ LIBSTLIBNAME := libsensors.a
+ LIBSHSONAME := libsensors.so.$(LIBMAINVER)
+ 
+-LIBTARGETS := $(MODULE_DIR)/$(LIBSHLIBNAME) \
+-              $(MODULE_DIR)/$(LIBSHSONAME) $(MODULE_DIR)/$(LIBSHBASENAME)
+-ifeq ($(BUILD_STATIC_LIB),1)
+-LIBTARGETS += $(MODULE_DIR)/$(LIBSTLIBNAME)
+-endif
++LIBTARGETS := $(MODULE_DIR)/$(LIBSTLIBNAME)
+ 
+ LIBCSOURCES := $(MODULE_DIR)/data.c $(MODULE_DIR)/general.c \
+                $(MODULE_DIR)/error.c $(MODULE_DIR)/access.c \
+@@ -131,9 +127,6 @@
+ ifeq ($(BUILD_STATIC_LIB),1)
+ 	$(INSTALL) -m 644 $(LIB_DIR)/$(LIBSTLIBNAME) $(DESTDIR)$(LIBDIR)
+ endif
+-	$(INSTALL) -m 755 $(LIB_DIR)/$(LIBSHLIBNAME) $(DESTDIR)$(LIBDIR)
+-	$(LN) $(LIBSHLIBNAME) $(DESTDIR)$(LIBDIR)/$(LIBSHSONAME)
+-	$(LN) $(LIBSHSONAME) $(DESTDIR)$(LIBDIR)/$(LIBSHBASENAME)
+ 	@if [ -z "$(DESTDIR)" -a "$(LIBDIR)" != "/usr/lib" -a "$(LIBDIR)" != "/lib" ] ; then \
+ 	   if [ -e "/usr/lib/$(LIBSHSONAME)" -o -e "/usr/lib/$(LIBSHBASENAME)" ] ; then \
+ 	     echo '******************************************************************************' ; \
+--- lm_sensors-3.3.5/prog/sensors/Module.mk
++++ lm_sensors-fixed/prog/sensors/Module.mk
+@@ -39,7 +39,7 @@
+ 
+ LIBICONV := $(shell if /sbin/ldconfig -p | grep -q '/libiconv\.so$$' ; then echo \-liconv; else echo; fi)
+ 
+-$(PROGSENSORSTARGETS): $(PROGSENSORSSOURCES:.c=.ro) lib/$(LIBSHBASENAME)
++$(PROGSENSORSTARGETS): $(PROGSENSORSSOURCES:.c=.ro) lib/$(LIBSTLIBNAME)
+ 	$(CC) $(EXLDFLAGS) -o $@ $(PROGSENSORSSOURCES:.c=.ro) $(LIBICONV) -Llib -lsensors
+ 
+ all-prog-sensors: $(PROGSENSORSTARGETS)

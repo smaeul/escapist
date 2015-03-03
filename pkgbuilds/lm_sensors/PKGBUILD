@@ -1,0 +1,35 @@
+pkgbase=lm_sensors
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=3.3.5
+pkgdesc="Hardware monitoring utilities"
+arch=(i686 x86_64)
+license=(GPL LGPL)
+url="http://www.lm-sensors.org/"
+makedepends=(bison flex sysfsutils)
+source=(http://dl.lm-sensors.org/lm-sensors/releases/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+        ${pkgbase}-musl.patch
+        ${pkgbase}-static.patch)
+sha256sums=('5dae6a665e1150159a93743c4ff1943a7efe02cd9d3bb12c4805e7d7adcf4fcf'
+            'SKIP'
+            '6b2df1210a955410c29170c8101bcee184a4f7407bd310ced57f272f92c2ab05'
+            'f983f63e24f0935695f66e5985b2d612880b175a971c532df22a431890f18565')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+  patch -p1 -i ${srcdir}/${pkgbase}-static.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make PREFIX=
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make PREFIX= SBINDIR=/bin MANDIR=/share/man DESTDIR=${pkgdir} install
+}
