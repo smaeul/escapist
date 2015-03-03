@@ -1,0 +1,23 @@
+pkgbase=sinit
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=0.9.2
+pkgdesc="Suckless Init"
+arch=(i686 x86_64)
+groups=(base)
+license=(MIT)
+url="http://tools.suckless.org/sinit/"
+source=(http://dl.suckless.org/${pkgbase}/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('52e74eae1eeb9dd3280cc93f96ea8cbc9a4984c75c4aaee1bd91ffd5a4aa83a5')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make PREFIX= DESTDIR=${pkgdir} install
+}
