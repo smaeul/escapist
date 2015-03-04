@@ -1,0 +1,42 @@
+pkgbase=cmake
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=3.1.3
+pkgdesc="Cross-platform make system"
+arch=(i686 x86_64)
+license=(custom)
+url="http://www.cmake.org/"
+makedepends=(libarchive libcurl libncursesw)
+optdepends=("ncurses: ncurses based GUI")
+source=(http://www.cmake.org/files/v${pkgver%.*}/${pkgbase}-${pkgver}.tar.gz
+        ${pkgbase}-static.patch)
+sha256sums=('45f4d3fa8a2f61cc092ae461aac4cac1bab4ac6706f98274ea7f314dd315c6d0'
+            '71b6cb6c3dd33dee5f5ce96e165923b2799dae94fc05a172c23c67a62bd46677')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-static.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./bootstrap \
+    --prefix= --docdir=/share/doc/cmake --mandir=/share/man \
+    --system-libs
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make test
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  install -Dm644 Copyright.txt ${pkgdir}/share/licenses/custom/${pkgname}
+}
