@@ -1,0 +1,11 @@
+--- uci/CMakeLists.txt
++++ uci-fixed/CMakeLists.txt
+@@ -15,7 +15,7 @@
+ 
+ SET(LIB_SOURCES libuci.c file.c util.c delta.c parse.c blob.c)
+ 
+-ADD_LIBRARY(uci SHARED ${LIB_SOURCES})
++ADD_LIBRARY(uci STATIC ${LIB_SOURCES})
+ TARGET_LINK_LIBRARIES(uci ubox)
+ SET_TARGET_PROPERTIES(uci PROPERTIES OUTPUT_NAME uci)
+ 

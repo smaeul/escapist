@@ -1,0 +1,42 @@
+pkgbase=uci
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=r85.790d306
+pkgdesc="Unified Configuration Interfaice from OpenWRT"
+arch=(i686 x86_64)
+license=(custom)
+url="http://wiki.openwrt.org/doc/uci"
+makedepends=(cmake git libubox)
+source=(git://nbd.name/${pkgbase}.git
+        ${pkgbase}-static.patch)
+sha256sums=('SKIP'
+            'cd4fb302bd04c758d20777f8e511869a7c3a4195d6229ba5b82e69167f9b4533')
+
+pkgver() {
+  cd ${srcdir}/${pkgbase}
+
+  echo "r$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd ${srcdir}/${pkgbase}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-static.patch
+
+  rm -rf ${srcdir}/${pkgbase}-build
+  mkdir ${srcdir}/${pkgbase}-build
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-build
+
+  cmake ../${pkgbase} -DBUILD_LUA=off -DCMAKE_INSTALL_PREFIX:PATH=
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} install
+#  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
+}
