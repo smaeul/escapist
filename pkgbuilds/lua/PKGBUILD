@@ -1,0 +1,42 @@
+pkgbase=lua
+pkgname=(lib${pkgbase} ${pkgbase})
+pkgrel=1
+pkgver=5.2.3
+pkgdesc="Lightweight interpreted programming language"
+arch=(i686 x86_64)
+license=(MIT)
+url="http://www.lua.org/"
+depends=(readline)
+makedepends=(libreadline)
+source=(http://www.lua.org/ftp/${pkgbase}-${pkgver}.tar.gz)
+sha256sums=('13c2fb97961381f7d06d5b5cea55b743c163800896fd5c5e2356201d3619002d')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make MYCFLAGS="$CFLAGS" MYLDFLAGS="$LDFLAGS" MYLIBS="-lncursesw" linux
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make test
+}
+
+package_lua() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make INSTALL_TOP=${pkgdir} INSTALL_MAN=${pkgdir}/share/man/man1 install
+  rm -r ${pkgdir}/{include,lib}
+
+  install -Dm644 doc/*.{gif,png,css,html} ${pkgdir}/usr/share/doc/lua
+}
+
+package_liblua() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make INSTALL_TOP=${pkgdir} INSTALL_MAN=${pkgdir}/share/man/man1 install
+  rm -r ${pkgdir}/{bin,share}
+}
+
+#  install -Dm644 lua.pc "$pkgdir"/usr/lib/pkgconfig/lua.pc
