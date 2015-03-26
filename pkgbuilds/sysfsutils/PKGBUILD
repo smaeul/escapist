@@ -1,0 +1,39 @@
+pkgbase=sysfsutils
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=2.1.0
+pkgdesc="Kernel sysfs utilities"
+arch=(i686 x86_64)
+license=(GPL LGPL)
+url="http://linux-diag.sourceforge.net/Sysfsutils.html"
+source=(http://downloads.sourceforge.net/sourceforge/linux-diag/${pkgbase}-${pkgver}.tar.gz
+        ${pkgbase}-musl.patch)
+sha256sums=('e865de2c1f559fff0d3fc936e660c0efaf7afe662064f2fb97ccad1ec28d208a'
+            'cbdc6fbec2a6742b2de3f18ec429c9e275f80af067ede85aa6d4ea9f33a08a22')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= --mandir=/share/man \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
