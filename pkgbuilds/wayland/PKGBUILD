@@ -1,0 +1,34 @@
+pkgbase=wayland
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=1.6.0
+pkgdesc="Display server protocol"
+arch=(i686 x86_64)
+license=(MIT)
+url="http://wayland.freedesktop.org/"
+depends=(libexpat libffi)
+makedepends=(pkg-config)
+source=(http://wayland.freedesktop.org/releases/${pkgbase}-${pkgver}.tar.xz)
+sha256sums=('a7d5102dcf53d08c059d24bc62de491d7cd482070abeb6737a20d0d86ba6fc7f')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-documentation \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
