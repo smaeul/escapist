@@ -1,7 +1,7 @@
 pkgbase=vis
-pkgname=${pkgbase}-git
+pkgname=${pkgbase}
 pkgrel=1
-pkgver=0.r290
+pkgver=r352.1540d03
 pkgdesc="Suckless visual text editor"
 arch=(i686 x86_64)
 groups=(base)
@@ -15,11 +15,7 @@ sha256sums=('SKIP')
 pkgver() {
   cd ${srcdir}/${pkgbase}
 
-  if GITTAG="$(git describe --abbrev=0 --tags 2>/dev/null)"; then
-    echo "$(sed -e "s/^${pkgname%%-git}//" -e 's/^[-_/a-zA-Z]\+//' -e 's/[-_+]/./g' <<< ${GITTAG}).r$(git rev-list --count ${GITTAG}..).g$(git log -1 --format="%h")"
-  else
-    echo "0.r$(git rev-list --count master).g$(git log -1 --format="%h")"
-  fi
+  echo "r$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
 }
 
 build() {
