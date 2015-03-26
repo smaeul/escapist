@@ -1,0 +1,42 @@
+pkgbase=json-c
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=0.12
+pkgdesc="JSON implementation in C"
+arch=(i686 x86_64)
+license=(MIT)
+url="https://github.com/json-c/json-c/wiki"
+source=(https://s3.amazonaws.com/${pkgbase}_releases/releases/${pkgbase}-${pkgver}.tar.gz
+        ${pkgbase}-musl.patch)
+sha256sums=('000c01b2b3f82dcb4261751eb71f1b084404fb7d6a282f06074d3c17078b9f3f'
+            '4b67c6c0dd6045537cd9c6815ec822e18d6b066aa957acbf3c2cddb818cbfb0e')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+
+  touch config.h.in
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  CFLAGS="$CFLAGS -Wno-error"
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
