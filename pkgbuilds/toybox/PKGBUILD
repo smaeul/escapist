@@ -1,7 +1,7 @@
 pkgbase=toybox
 pkgname=${pkgbase}
 pkgrel=1
-pkgver=0.5.1
+pkgver=0.5.2
 pkgdesc="A collection of POSIX and Linux utilities"
 arch=(i686 x86_64)
 license=(none)
