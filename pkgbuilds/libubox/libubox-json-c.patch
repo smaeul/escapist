@@ -1,0 +1,33 @@
+--- ubox/blobmsg_json.c
++++ ubox-fixed/blobmsg_json.c
+@@ -20,7 +20,7 @@
+ #ifdef JSONC
+ 	#include <json.h>
+ #else
+-	#include <json/json.h>
++	#include <json-c/json.h>
+ #endif
+ 
+ bool blobmsg_add_object(struct blob_buf *b, json_object *obj)
+--- ubox/examples/json_script-example.c
++++ ubox-fixed/examples/json_script-example.c
+@@ -1,7 +1,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-#include <json.h>
++#include <json-c/json.h>
+ #include "blobmsg.h"
+ #include "blobmsg_json.h"
+ #include "json_script.h"
+--- ubox/jshn.c
++++ ubox-fixed/jshn.c
+@@ -16,7 +16,7 @@
+ #ifdef JSONC
+         #include <json.h>
+ #else
+-        #include <json/json.h>
++        #include <json-c/json.h>
+ #endif
+ 
+ #include <string.h>

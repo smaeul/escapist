@@ -1,0 +1,45 @@
+pkgbase=libubox
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=r337.2a9edb4
+pkgdesc="C utility functions from OpenWRT"
+arch=(i686 x86_64)
+license=(custom)
+url="http://wiki.openwrt.org/doc/libubox"
+makedepends=(cmake git libjson-c)
+source=(git://git.openwrt.org/project/${pkgbase}.git
+        ${pkgbase}-json-c.patch
+        ${pkgbase}-static.patch)
+sha256sums=('SKIP'
+            'e339972185836061b67b60083e119c798384d1de4df7f332e7784ed6bb03f8a1'
+            '476dfd2cfb4716cdfc97d5d1a1b96a93128557416f5dcbdd7f5b1ac3a6dba2a5')
+
+pkgver() {
+  cd ${srcdir}/${pkgbase}
+
+  echo "r$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd ${srcdir}/${pkgbase}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-json-c.patch
+  patch -p1 -i ${srcdir}/${pkgbase}-static.patch
+
+  rm -rf ${srcdir}/${pkgbase}-build
+  mkdir ${srcdir}/${pkgbase}-build
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-build
+
+  cmake ../${pkgbase} -DBUILD_LUA:BOOL=off -DCMAKE_INSTALL_PREFIX:PATH=
+  make
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-build
+
+  make DESTDIR=${pkgdir} install/fast
+#  install -Dm644 LICENSE ${pkgdir}/share/licenses/custom/${pkgname}
+}
