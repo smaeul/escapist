@@ -1,0 +1,33 @@
+pkgbase=freetype
+pkgname=lib${pkgbase}
+pkgrel=1
+pkgver=2.5.4
+pkgdesc="TrueType font rendering library"
+arch=(i686 x86_64)
+license=(GPL)
+url="http://freetype.sourceforge.net/"
+depends=(libz libbz2)
+source=(http://download.savannah.gnu.org/releases/${pkgbase}/${pkgbase}-${pkgver}.tar.bz2{,.sig})
+sha256sums=('3b4e2c666b33b32ad29ff0fe5c6538e757d3c73368e5dfa88bd59b4bc95cbabb'
+            'SKIP')
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= \
+    --disable-shared
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make check
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+}
