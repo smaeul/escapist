@@ -1,0 +1,50 @@
+pkgbase=openssh
+pkgname=${pkgbase}
+pkgrel=1
+pkgver=6.7p1
+pkgdesc="Secure remote shell client and server"
+arch=(i686 x86_64)
+groups=(net)
+license=(BSD)
+url="http://www.openssh.org/"
+makedepends=(libressl libz)
+backup=(etc/ssh/ssh_config
+        etc/ssh/sshd_config)
+source=(ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/${pkgbase}-${pkgver}.tar.gz{,.asc}
+        ${pkgbase}-musl.patch)
+sha256sums=('b2f8394eae858dabbdef7dac10b99aec00c95462753e80342e530bbb6f725507'
+            'SKIP'
+            '1e7c2ad6700b10f95cdc6dcddd1efd6c1ad3ede94f368927f1109fe79d332016')
+
+prepare() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  patch -p1 -i ${srcdir}/${pkgbase}-musl.patch
+}
+
+build() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  ./configure --build=$CHOST \
+    --prefix= --sbindir=/bin --libexecdir=/lib/openssh --sysconfdir=/etc/ssh \
+    --with-mantype=man --with-md5-passwords --with-pid-dir=/run \
+    --with-privsep-user=nobody --with-ssl-engine
+  make
+}
+
+check() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make tests
+}
+
+package() {
+  cd ${srcdir}/${pkgbase}-${pkgver}
+
+  make DESTDIR=${pkgdir} install
+  install -Dm644 LICENCE ${pkgdir}/share/licenses/custom/${pkgname}
+
+  install -Dm755 contrib/findssl.sh ${pkgdir}/bin/findssl.sh
+  install -Dm755 contrib/ssh-copy-id ${pkgdir}/bin/ssh-copy-id
+  install -Dm644 contrib/ssh-copy-id.1 ${pkgdir}/share/man/man1/ssh-copy-id.1
+}
